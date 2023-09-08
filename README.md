@@ -31,5 +31,5 @@ roslaunch bt_sample bt_sample.launch
 ### pub topic - ex) 신호등이 있다는 표시판이 인식된 상황
 
 ```jsx
-rostopic pub /interrupt_event std_msgs/String "Traffic"
+rostopic pub /interrupt_event std_msgs/String "traffic"
 ```

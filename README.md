@@ -1,4 +1,4 @@
-# auturbo_autorace2023_team_ma_ah
+# turtlebot3_autorace2023_team_ma_ah
 
 ### install
 

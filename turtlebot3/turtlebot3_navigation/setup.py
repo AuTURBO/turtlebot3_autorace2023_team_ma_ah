@@ -4,7 +4,7 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-    packages = ['turtlebot3_teleop'],
+    packages = ['turtlebot3_navigation'],
     package_dir = {'': 'src'}
 )
 

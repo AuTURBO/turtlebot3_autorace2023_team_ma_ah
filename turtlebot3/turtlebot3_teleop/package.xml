@@ -17,4 +17,8 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
   <depend>geometry_msgs</depend>
+  <export>
+    <flexbe_behaviors />
+  </export>
+
 </package>

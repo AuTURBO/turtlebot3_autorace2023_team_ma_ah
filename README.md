@@ -1,13 +1,37 @@
 # turtlebot3_autorace2023_team_ma_ah
 
-### install
+## install
 
-```jsx
-sudo apt-get install ros-noetic-teb-local-planner
-sudo apt-get install ros-noetic-behaviortree-cpp
+```python
+sudo apt install ros-noetic-flexbe-behavior-engine
+```
+
+```python
+git clone -b noetic https://github.com/FlexBE/flexbe_app.git
+```
+
+### 바로가기 생성
+
+```python
+rosrun flexbe_app shortcut create  # or "remove" to remove it again
+```
+
+### 새 프로젝트 생성
+
+```python
+cd ~/catkin_ws/src
+rosrun flexbe_widget create_repo [your_project_name]
+
+# 위 명령으로 새 패키지가 생성되었으므로 다시 빌드하고 소싱합니다.
 cd ~/catkin_ws
-rosdep install --from-paths src --ignore-src -r -y
+catkin build
+source devel/setup.bash 
+```
 
+### 편집기 실행
+
+```python
+roslaunch flexbe_app flexbe_ocs.launch
 ```
 
 ### launch gazebo
@@ -22,14 +46,3 @@ roslaunch turtlebot3_gazebo turtlebot3_world.launch
 roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map.yaml
 ```
 
-### launch bt control
-
-```jsx
-roslaunch bt_sample bt_sample.launch
-```
-
-### pub topic - ex) 신호등이 있다는 표시판이 인식된 상황
-
-```jsx
-rostopic pub /interrupt_event std_msgs/String "traffic"
-```

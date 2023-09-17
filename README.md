@@ -57,7 +57,7 @@ export TURTLEBOT3_MODEL=burger
 ### launch gazebo
 
 ```bash
-roslaunch turtlebot3_gazebo turtlebot3_world.launch
+roslaunch turtlebot3_gazebo turtlebot3_autorace_2020.launch
 ```
 
 

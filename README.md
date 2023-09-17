@@ -53,12 +53,19 @@ export TURTLEBOT3_MODEL=burger
 ```
 
 
+
+### launch gazebo
+
+```bash
+roslaunch turtlebot3_gazebo turtlebot3_world.launch
+```
+
+
 ### launch teleop 
 
 ```bash
 roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
 ```
-
 
 
 ### launch slam 
@@ -72,12 +79,6 @@ roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
 rosrun map_server map_saver -f ~/map
 ```
 
-
-### launch gazebo
-
-```bash
-roslaunch turtlebot3_gazebo turtlebot3_world.launch
-```
 
 ### launch navi  - 맵은 따서 홈 디렉토리에
 

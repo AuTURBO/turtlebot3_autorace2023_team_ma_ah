@@ -34,15 +34,54 @@ source devel/setup.bash
 roslaunch flexbe_app flexbe_ocs.launch
 ```
 
+
+
+## turtlebot3 bringup
+
+### setup bashrc 
+
+```bash
+export ROS_HOSTNAME=localhost
+export ROS_MASTER_URI=http://localhost:11311
+
+alias cs='cd ~/catkin_ws/src'
+alias cw='cd ~/catkin_ws'
+alias cm='cd ~/catkin_ws && catkin_make'
+alias sb='source ~/.bashrc'
+alias eb='nano ~/.bashrc'
+export TURTLEBOT3_MODEL=burger
+```
+
+
+### launch teleop 
+
+```bash
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+```
+
+
+
+### launch slam 
+
+```bash
+roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
+```
+#### save map
+
+```bash
+rosrun map_server map_saver -f ~/map
+```
+
+
 ### launch gazebo
 
-```jsx
+```bash
 roslaunch turtlebot3_gazebo turtlebot3_world.launch
 ```
 
 ### launch navi  - 맵은 따서 홈 디렉토리에
 
-```jsx
+```bash
 roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map.yaml
 ```
 

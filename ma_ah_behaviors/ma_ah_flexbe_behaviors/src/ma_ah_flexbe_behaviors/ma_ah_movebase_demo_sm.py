@@ -9,7 +9,8 @@
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from flexbe_states.log_state import LogState
-from ma_ah_flexbe_states.move_base_state import MoveBaseState
+from ma_ah_flexbe_states.move_base_state import MoveBaseState as ma_ah_flexbe_states__MoveBaseState
+from ma_ah_flexbe_states.traffic_sign import TrafficSign
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -44,7 +45,7 @@ class maahmovebasedemoSM(Behavior):
 
 
 	def create(self):
-		init_waypoint = [0.5, 0.5, 1]
+		init_waypoint = [-2.0, -2.0, 1]
 		arrive = "end waypoint"
 		failed = "failed waypoint"
 		# x:30 y:365, x:130 y:365
@@ -58,20 +59,26 @@ class maahmovebasedemoSM(Behavior):
 
 
 		with _state_machine:
-			# x:184 y:105
-			OperatableStateMachine.add('waypoint',
-										MoveBaseState(),
-										transitions={'arrived': 'end', 'failed': 'not end'},
-										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
-										remapping={'waypoint': 'waypoint'})
+			# x:470 y:52
+			OperatableStateMachine.add('line_control',
+										TrafficSign(),
+										transitions={'continue': 'line_control', 'obstacle': 'waypoint', 'traffic_light': 'line_control', 'parking': 'line_control', 'cross': 'line_control'},
+										autonomy={'continue': Autonomy.Off, 'obstacle': Autonomy.Off, 'traffic_light': Autonomy.Off, 'parking': Autonomy.Off, 'cross': Autonomy.Off})
 
-			# x:275 y:247
+			# x:564 y:400
 			OperatableStateMachine.add('not end',
 										LogState(text=failed, severity=Logger.REPORT_HINT),
 										transitions={'done': 'failed'},
 										autonomy={'done': Autonomy.Off})
 
-			# x:92 y:249
+			# x:201 y:141
+			OperatableStateMachine.add('waypoint',
+										ma_ah_flexbe_states__MoveBaseState(),
+										transitions={'arrived': 'end', 'failed': 'not end'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'waypoint': 'waypoint'})
+
+			# x:302 y:303
 			OperatableStateMachine.add('end',
 										LogState(text=arrive, severity=Logger.REPORT_HINT),
 										transitions={'done': 'finished'},

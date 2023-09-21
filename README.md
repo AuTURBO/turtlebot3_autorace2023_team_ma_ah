@@ -102,3 +102,18 @@ rosrun map_server map_saver -f ~/map
 roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map.yaml
 ```
 
+## flexbe
+
+### lane detecting
+
+```bash
+roslaunch turtlebot3_autorace_camera intrinsic_camera_calibration.launch
+```
+
+```bash
+roslaunch turtlebot3_autorace_camera extrinsic_camera_calibration.launch
+```
+
+```bash
+roslaunch turtlebot3_autorace_detect detect_lane.launch mode:=calibration
+```

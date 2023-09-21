@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="lane_control">
+
+	<executable package_path="ma_ah_flexbe_behaviors.lane_control_sm" class="lane_controlSM" />
+	<tagstring></tagstring>
+	<author>gg</author>
+	<date>Thu Sep 21 2023</date>
+	<description>
+		s
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

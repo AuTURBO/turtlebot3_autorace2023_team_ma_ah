@@ -31,7 +31,7 @@ class TrafficSign(EventState):
 		self._sub = ProxySubscriberCached({"/traffic_sign": String})
 		self._sign = 'continue'
 		
-
+	
 	def execute(self, userdata):
 		# 이 메서드는 상태가 활성 상태인 동안 주기적으로 호출됩니다.
 		# 주요 목적은 상태 조건을 확인하고 상응하는 결과를 트리거하는 것입니다.

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="mode_control_teset_1">
+
+	<executable package_path="test_sion_flexbe_behaviors.mode_control_teset_1_sm" class="mode_control_teset_1SM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>Mon Sep 25 2023</date>
+	<description>
+		hello
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

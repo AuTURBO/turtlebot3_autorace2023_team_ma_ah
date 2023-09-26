@@ -55,7 +55,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.018" radius="0.033"/>
+        <cylinder length="0.018" radius="0.055"/>
       </geometry>
     </collision>
 
@@ -87,7 +87,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.018" radius="0.033"/>
+        <cylinder length="0.018" radius="0.055"/>
       </geometry>
     </collision>
 
@@ -103,7 +103,7 @@
   <joint name="caster_back_joint" type="fixed">
     <parent link="base_link"/>
     <child link="caster_back_link"/>
-    <origin xyz="-0.081 0 -0.004" rpy="-1.5707 0 0"/>
+    <origin xyz="-0.081 0 -0.024" rpy="-1.5707 0 0"/>
   </joint>
 
   <link name="caster_back_link">

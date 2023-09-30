@@ -22,7 +22,7 @@ class StopBarState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(StopBarState, self).__init__(outcomes=['stop', 'proceed'])
+        super(StopBarState, self).__init__(outcomes=['proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/stop_bar_status": String})
@@ -40,14 +40,12 @@ class StopBarState(EventState):
             # Assuming 'stop_bar_info' is a string that indicates stop bar status.
             if stop_bar_info == "down":
                 self._stop_bar_status = "down"
-                return 'stop'
-            elif stop_bar_info == "up":
-                self._stop_bar_status = "up"
                 return 'proceed'
-        else:
-            Logger.loginfo("No stop bar status available.")
-            self._stop_bar_status = None
-            return 'proceed'  # Proceed by default if no information is available.
+            elif stop_bar_info == "up":
+                Logger.loginfo("Finished Stop bar mode.")
+                self._stop_bar_status = "up"
+                return 'done'
+
 
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

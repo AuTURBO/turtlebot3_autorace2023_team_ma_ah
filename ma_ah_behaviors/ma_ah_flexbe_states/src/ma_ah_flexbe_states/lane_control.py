@@ -9,6 +9,8 @@ from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 
+from std_msgs.msg import String
+
 
 class ControlLaneState(EventState):
     '''
@@ -16,31 +18,16 @@ class ControlLaneState(EventState):
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['done', 'failed'])
-        self.sub_lane = ProxySubscriberCached({"/detect/lane": Float64})
-        # self.sub_lane = rospy.Subscriber('/control/lane', Float64, self.cbFollowLane, queue_size=1)
+        super(ControlLaneState, self).__init__(outcomes=['proceed', 'traffic_sign'])
+        
+        self.lastError = 0
+        self._MAX_VEL = 0.5
+        
+        self._sub = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
-        # self.pub_cmd_vel = rospy.Publisher('/control/cmd_vel', Twist, queue_size=1)
+        self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
 
-        self.lastError = 0
-        self.MAX_VEL = 0.1
-
-
-    # def cbFollowLane(self, desired_center):
-    #     center = desired_center
-    #     error = center - 500
-
-    #     Kp = 0.0025
-    #     Kd = 0.007
-
-    #     angular_z = Kp * error + Kd * (error - self.lastError)
-    #     self.lastError = error
-        
-    #     twist = Twist()
-    #     twist.linear.x = min(self.MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
-    #     twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-    #     self.pub_cmd_vel.publish(twist)
 
     def on_enter(self, userdata):
         Logger.loginfo("Starting lane control...")
@@ -60,13 +47,17 @@ class ControlLaneState(EventState):
             self.lastError = error
             
             twist = Twist()
-            twist.linear.x = min(self.MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
+            twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
             twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
             # self
             # self.pub_cmd_vel.publish(twist)
             self.pub_cmd_vel.publish("/cmd_vel", twist)
             Logger.loginfo("Following lane...")
-            return 'done'
+            return 'proceed'
+        elif self.sub_traffic_sign.has_msg("/traffic_sign"):
+            traffic_sign = self.sub_traffic_sign.get_last_msg("/traffic_sign").data
+            Logger.loginfo("Traffic sign: {}".format(traffic_sign))
+            return 'traffic_sign'
     
 
     def on_exit(self, userdata):

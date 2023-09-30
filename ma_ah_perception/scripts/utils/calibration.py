@@ -40,8 +40,6 @@ for fname in images:
         cv2.imshow(winname, img)
         cv2.waitKey(0)
 
-print("bb")
-
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)  ## 왜곡 펴기
 
 print(mtx)
@@ -91,7 +89,7 @@ newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 0)
 ## 전체를 보고 싶다면 1, 펴진 부분만 보고 싶다면 0에 가깝게 인자 값을 주면 된다
 #dst = cv2.undistort(origin, mtx, dist)  ## getOptimalNewCameraMatrix 함수를 쓰지 않은 이미지
 dst2 = cv2.undistort(origin, mtx, dist, None, newcameramtx)  ## 함수를 쓴 이미지
-#cv2.imshow('num1', dst)
+cv2.imshow('num1', dst)
 cv2.imshow('num2', dst2)
 print("end")
 cv2.waitKey(0)

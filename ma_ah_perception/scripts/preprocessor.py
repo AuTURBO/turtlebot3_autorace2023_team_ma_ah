@@ -52,25 +52,26 @@ class PreProcessor:
     # =============================================
 
     def warp_perspect(self, img):
-        width_margin_top = 110
-        height_margin = 160
+        width_margin_top = 195
+        height_margin_top = 320
 
-        width_margin_bottom = 20
+        width_margin_bottom = 0
+        height_margin_bottom = 40
 
         src = np.float32(
             [
-                [0 + width_margin_top, 0+height_margin],
-                [320 - width_margin_top, 0+height_margin],
-                [0+width_margin_bottom, 240],
-                [320-width_margin_bottom, 240],
+                [0 + width_margin_top, 0+height_margin_top],
+                [640 - width_margin_top, 0+height_margin_top],
+                [0+width_margin_bottom, 480-height_margin_bottom],
+                [640-width_margin_bottom, 480-height_margin_bottom],
             ]
         )  # Perspective transform을 위한 src 좌표 설정
         dst = np.float32(
             [
                 [0, 0],
-                [320, 0],
-                [0, 240],
-                [320, 240],
+                [640, 0],
+                [0, 480],
+                [640, 480],
             ]
         )  # Perspective transform을 위한 dst 좌표 설정
 
@@ -93,7 +94,7 @@ class PreProcessor:
 
         roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
 
-        cv2.imshow("roi", roi)
+        # cv2.imshow("roi", roi)
 
         warped_img = cv2.warpPerspective(
             roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR
@@ -137,7 +138,7 @@ class PreProcessor:
 
     def hist_line_peak(self, img):
         # print(img.shape)
-        histogram = np.sum(img[90:, :], axis=0)  # X축 히스토그램 계산
+        histogram = np.sum(img[440:, :], axis=0)  # X축 히스토그램 계산
         # print(histogram.shape)
         midpoint = np.int(histogram.shape[0] / 2)  # 중앙점 계산
         # print(f"midpoint: {midpoint}")
@@ -194,14 +195,14 @@ class PreProcessor:
         )  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
 
         # Sliding Window
-        y = 120  # 탐색 시작 Y좌표 결정
+        y = 470  # 탐색 시작 Y좌표 결정
         lx = []  # 왼쪽 차선 X좌표 저장 리스트
         ly = []  # 왼쪽 차선 Y좌표 저장 리스트
         rx = []  # 오른쪽 차선 X좌표 저장 리스트
         ry = []  # 오른쪽 차선 Y좌표 저장 리스트
         mx = []  # 중간 차선 X좌표 저장 리스트
         my = []  # 중간 차선 Y좌표 저장 리스트
-        self.window_width = 35  # window 폭
+        self.window_width = 45  # window 폭
         self.window_height = 3  # window 높이
         self.left_window_n = 0
         self.right_window_n = 0

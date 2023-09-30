@@ -10,12 +10,12 @@ from matplotlib import pyplot as plt
 from preprocessor import PreProcessor
 
 from std_msgs.msg import Int32
-
+from geometry_msgs.msg import Twist
 from utils import undistort
 import sys 
 
 
-steer_angle = Int32()
+steer_angle = Twist()
 steer_angle_publisher = None
 
 lane_bin_th = 120  # 145
@@ -50,7 +50,7 @@ def simple_controller(lx, ly, mx, my, rx, ry):
     side_margin = 140
 
     if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
-        # print("ALL!!!")
+        print("ALL!!!")
         target = (lx[0] + rx[0]) // 2
     elif mx != None and len(mx) > 3:
         # print("Mid!!!")
@@ -69,7 +69,6 @@ def simple_controller(lx, ly, mx, my, rx, ry):
 
 def main(frame):
 
-    print(frame.shape)
     global ack_publisher
     global steer_angle_publisher
 
@@ -77,8 +76,9 @@ def main(frame):
 
     prev_target = 320
     frameRate = 11 #33
+    frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
 
-    cv2.imshow("Distort", frame)
+    # cv2.imshow("Distort", frame)
 
     frame = undistort.undistort_func(frame)
 
@@ -87,11 +87,11 @@ def main(frame):
     gblur_img  = cv2.GaussianBlur(frame, (3, 3), sigmaX = 0, sigmaY = 0)
     #cv2.imshow("gblur_img", gblur_img)
 
-    #gray = cv2.cvtColor(gblur_img, cv2.COLOR_BGR2GRAY)
-    #adaptive_binary = threshold_binary(gray, lane_bin_th, "adaptive", window_name="adaptive_binary", show=True)
-    #cv2.imshow("adaptive_binary", adaptive_binary)
+    gray = cv2.cvtColor(gblur_img, cv2.COLOR_BGR2GRAY)
+    adaptive_binary = threshold_binary(gray, lane_bin_th, "otsu", window_name="adaptive_binary", show=True)
+    cv2.imshow("adaptive_binary", adaptive_binary)
 
-    warped_img = pre_module.warp_perspect(frame)
+    warped_img = pre_module.warp_perspect(adaptive_binary)
     cv2.imshow('warped_img', warped_img)	
 
     edge = canny(warped_img, 70, 210, show=False)
@@ -100,14 +100,14 @@ def main(frame):
     kernel_erosion = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
 
     closing = cv2.morphologyEx(warped_img, cv2.MORPH_CLOSE,kernel_close)
-    # cv2.imshow('closing', closing)	# 프레임 보여주기
+    cv2.imshow('closing', closing)	# 프레임 보여주기
 
-    edge_to_closing = cv2.morphologyEx(edge, cv2.MORPH_CLOSE,kernel_close)
-    #cv2.imshow('edge_to_closing', edge_to_closing)	# 프레임 보여주기
+    # edge_to_closing = cv2.morphologyEx(edge, cv2.MORPH_CLOSE,kernel_close)
+    # cv2.imshow('edge_to_closing', edge_to_closing)	# 프레임 보여주기
 
-    edge_to_closing = cv2.medianBlur(edge_to_closing,5)
+    # edge_to_closing = cv2.medianBlur(edge_to_closing,5)
 
-    msk, lx, ly, mx, my, rx, ry = pre_module.sliding_window(edge_to_closing)
+    msk, lx, ly, mx, my, rx, ry = pre_module.sliding_window(closing)
 
     filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
     pre_module.drawing_lane(msk, filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry)
@@ -118,10 +118,14 @@ def main(frame):
     prev_target = target
     #print(f"filtered_target: {target}")
 
-    angle = target - 320
-    angle = map(angle, -100, 100, -50, 50)
-    angle = angle * 0.9
+    angle = 320 - target
+    angle = map(angle, 100, -100, 2.5, -2.)
+    # angle = angle * 0.5
     print(f"angle: {angle}")
+
+    steer_angle.linear.x = 0.2
+    steer_angle.angular.z = angle
+
     # ack_msg.speed = int(20)
     # ack_msg.angle = int(angle)
 
@@ -129,7 +133,7 @@ def main(frame):
 
     # steer_angle.data = int(angle)
 
-    # steer_angle_publisher.publish(steer_angle)
+    steer_angle_publisher.publish(steer_angle)
 
     cv2.circle(frame, (int(target), int(480 - 135)), 1, (120, 0, 255), 10)
 
@@ -341,7 +345,7 @@ def start():
 
     rospy.Subscriber(image_topic, Image, image_callback)
     #ack_publisher = rospy.Publisher('xycar_motor', xycar_motor, queue_size=1)
-    #steer_angle_publisher = rospy.Publisher('xycar_angle', Int32, queue_size=1)
+    steer_angle_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
     rospy.spin()
 
 

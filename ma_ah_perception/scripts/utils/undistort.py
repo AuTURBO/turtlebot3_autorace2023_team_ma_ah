@@ -44,8 +44,10 @@ def undistort_func(frame):
     #print(dist)
 
     h, w = frame.shape[:2]
+    cv2.imshow("before", frame)
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 0)
 
     dst = cv2.undistort(frame, mtx, dist, None, newcameramtx)  ## 함수를 쓴 이미지
+    cv2.imshow("kill", dst)
 
     return dst

@@ -4,10 +4,10 @@ import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
-path = './img/'
+path = './calibration_img/'
 img_name = 'img'
 
-current_directory = os.getcwd() + '/img'
+current_directory = os.getcwd() + '/calibration_img'
 
 
 
@@ -56,8 +56,9 @@ def image_callback(msg):
 def start():
     #global ack_publisher
     #global steer_angle_publisher
+    print("Start")
     rospy.init_node('img_save')
-    image_topic = "/camera/color/image_raw"
+    image_topic = "/camera/image"
 
     rospy.Subscriber(image_topic, Image, image_callback)
     #ack_publisher = rospy.Publisher('xycar_motor', xycar_motor, queue_size=1)

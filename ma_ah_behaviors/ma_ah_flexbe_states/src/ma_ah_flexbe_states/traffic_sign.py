@@ -21,17 +21,19 @@ class TrafficSign(EventState):
 
 	def __init__(self):
 		# Declare outcomes, input_keys, and output_keys by calling the super constructor with the corresponding arguments.
-		super(TrafficSign, self).__init__(outcomes = ['continue', 'obstacle', 'traffic_light', 'parking', 'cross'])
-
+		super(TrafficSign, self).__init__(outcomes = ['intersection_sign', 'obstacle_detection', 'parking_detection', 'stop_bar_status', 'tunnel_info'])
+		
+		
 		# Store state parameter for later use.
 
 		# The constructor is called when building the state machine, not when actually starting the behavior.
 		# Thus, we cannot save the starting time now and will do so later.
 
 		self._sub = ProxySubscriberCached({"/traffic_sign": String})
-		self._sign = 'continue'
+		#self._sign = 'lane_control'
+		self._sign = None
 		
-	
+		
 	def execute(self, userdata):
 		# 이 메서드는 상태가 활성 상태인 동안 주기적으로 호출됩니다.
 		# 주요 목적은 상태 조건을 확인하고 상응하는 결과를 트리거하는 것입니다.
@@ -39,17 +41,20 @@ class TrafficSign(EventState):
 		if self._sub.has_msg("/traffic_sign"):
 			self._sign = self._sub.get_last_msg("/traffic_sign").data
 			Logger.loginfo(self._sign)
-			if self._sign == "obstacle":
-				return 'obstacle'
-			elif self._sign == "traffic_light":
-				return 'traffic_light'
-			elif self._sign == "parking":
-				return 'parking'
-			elif self._sign == "cross":
-				return 'cross'
-		else:
-			Logger.loginfo("no traffic sign")
-			return 'continue'
+
+			if self._sign == "intersection_sign":
+				return 'intersection_sign'
+			elif self._sign == "obstacle_detection":
+				return 'obstacle_detection'
+			elif self._sign == "parking_detection":
+				return 'parking_detection'
+			elif self._sign == 'stop_bar_status':
+				return 'stop_bar_status'
+			elif self._sign == 'tunnel_info':
+				return 'tunnel_info'
+		# else:
+		# 	Logger.loginfo("no traffic sign")
+		# 	return 'lane_control'
 
 
 	def on_enter(self, userdata):

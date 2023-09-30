@@ -12,52 +12,55 @@ from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
 
 
-class ControlLaneState(EventState):
+class LeftControlLaneState(EventState):
     '''
     Implements a FlexBE state that controls the lane of a robot.
     '''
 
-    def __init__(self, MAX_VEL):
-        super(ControlLaneState, self).__init__(outcomes=['done', 'failed', 'traffic_sign'])
+    def __init__(self):
+        super(LeftControlLaneState, self).__init__(outcomes=['done', 'proceed'])
         
         self.lastError = 0
-        self._MAX_VEL = MAX_VEL
+        self._MAX_VEL = 0.5
         
         self._sub = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
-        self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
+        self._sub = ProxySubscriberCached({"/detect/LaneDirection": String})
 
 
     def on_enter(self, userdata):
-        Logger.loginfo("Starting lane control...")
+        Logger.loginfo("Starting Left lane control...")
         # if self._sub.has_msg("/traffic_sign"):
             
 
     def execute(self, userdata):
         if self._sub.has_msg("/detect/lane"):
             desired_center = self._sub.get_last_msg("/detect/lane").data
-            center = desired_center
-            error = center - 500
-
-            Kp = 0.0025
-            Kd = 0.007
-
-            angular_z = Kp * error + Kd * (error - self.lastError)
-            self.lastError = error
+            lane_direction = self._sub.get_last_msg("detect/LaneDirection").data
             
-            twist = Twist()
-            twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
-            twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-            # self
-            # self.pub_cmd_vel.publish(twist)
-            self.pub_cmd_vel.publish("/cmd_vel", twist)
-            Logger.loginfo("Following lane...")
-            return 'done'
-        elif self.sub_traffic_sign.has_msg("/traffic_sign"):
-            traffic_sign = self.sub_traffic_sign.get_last_msg("/traffic_sign").data
-            Logger.loginfo("Traffic sign: {}".format(traffic_sign))
-            return 'traffic_sign'
+            if lane_direction == -1:    #왼쪽으로 가라고 했을 때
+                center = desired_center
+                error = center - 500
+
+                Kp = 0.0025
+                Kd = 0.007
+
+                angular_z = Kp * error + Kd * (error - self.lastError)
+                self.lastError = error
+                
+                twist = Twist()
+                twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
+                twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
+                # self
+                # self.pub_cmd_vel.publish(twist)
+                self.pub_cmd_vel.publish("/cmd_vel", twist)
+                Logger.loginfo("Following lane...")
+                return 'proceed'
+            else:
+                Logger.loginfo("Finished Left Lane control Mode.")
+                return 'done'
+
     
 
     def on_exit(self, userdata):

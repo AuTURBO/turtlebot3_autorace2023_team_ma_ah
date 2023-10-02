@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from preprocessor import PreProcessor
 
 from std_msgs.msg import Int32
+from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 from utils import undistort
 import sys 
@@ -17,6 +18,9 @@ import sys
 
 steer_angle = Twist()
 steer_angle_publisher = None
+
+center_lane = Float64()
+center_lane_publisher = None
 
 lane_bin_th = 120  # 145
 frameWidth = 0
@@ -74,6 +78,9 @@ def main(frame):
 
     global steer_angle
 
+    global center_lane_publisher
+    global center_lane
+
     prev_target = 320
     frameRate = 11 #33
     frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
@@ -119,7 +126,7 @@ def main(frame):
     #print(f"filtered_target: {target}")
 
     angle = 320 - target
-    angle = map(angle, 100, -100, 2.5, -2.)
+    angle = map(angle, 100, -100, 2.5, -2.5)
     # angle = angle * 0.5
     print(f"angle: {angle}")
 
@@ -133,7 +140,12 @@ def main(frame):
 
     # steer_angle.data = int(angle)
 
-    steer_angle_publisher.publish(steer_angle)
+    # steer_angle_publisher.publish(steer_angle)
+
+    # center lane pub  
+    center_lane.data = (target)
+    center_lane_publisher.publish(center_lane)
+
 
     cv2.circle(frame, (int(target), int(480 - 135)), 1, (120, 0, 255), 10)
 
@@ -340,12 +352,15 @@ def image_callback(msg):
 def start():
     global ack_publisher
     global steer_angle_publisher
+    global center_lane_publisher
     rospy.init_node("image_listener")
     image_topic = "/camera/image"
 
     rospy.Subscriber(image_topic, Image, image_callback)
     #ack_publisher = rospy.Publisher('xycar_motor', xycar_motor, queue_size=1)
-    steer_angle_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+    # steer_angle_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+    # target lane pub 
+    center_lane_publisher = rospy.Publisher('/detect/lane', Float64, queue_size=1)
     rospy.spin()
 
 

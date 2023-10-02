@@ -1,9 +1,23 @@
+# 코스트맵 종료 여부 설정
 shutdown_costmaps: false
-controller_frequency: 10.0
-planner_patience: 5.0
-controller_patience: 15.0
-conservative_reset_dist: 3.0
-planner_frequency: 5.0
-oscillation_timeout: 10.0
-oscillation_distance: 0.2
 
+# 컨트롤러 제어 주파수 설정 (Hz)
+controller_frequency: 10.0
+
+# 경로 계획 경량화 시간 제한 (초)
+planner_patience: 5.0
+
+# 컨트롤러 경량화 시간 제한 (초)
+controller_patience: 15.0
+
+# 로봇의 경로를 재설정할 최대 거리 (미터)
+conservative_reset_dist: 3.0
+
+# 경로 계획 주파수 설정 (Hz)
+planner_frequency: 5.0
+
+# 진동 감지 타임아웃 (초)
+oscillation_timeout: 10.0
+
+# 진동으로 간주할 거리 임계값 (미터)
+oscillation_distance: 0.2

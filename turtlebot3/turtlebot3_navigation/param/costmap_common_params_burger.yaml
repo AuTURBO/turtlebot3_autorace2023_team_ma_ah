@@ -1,11 +1,14 @@
-obstacle_range: 3.0
-raytrace_range: 3.5
+obstacle_range: 3.0  # 장애물로 간주되는 최대 거리 (미터)
 
-footprint: [[-0.105, -0.105], [-0.105, 0.105], [0.041, 0.105], [0.041, -0.105]]
-#robot_radius: 0.105
+raytrace_range: 3.5  # 레이트레이스 최대 거리 (미터)
 
-inflation_radius: 1.0
-cost_scaling_factor: 3.0
+footprint: [[-0.035, -0.035], [-0.035, 0.035], [0.035, 0.035], [0.035, -0.035]]
+# robot_radius: 0.105
+
+
+inflation_radius: 0.01  # 장애물 팽창 반지름 (미터)
+
+cost_scaling_factor: 300.0  # 코스트 값에 곱해질 스케일링 팩터
 
 map_type: costmap
 observation_sources: scan

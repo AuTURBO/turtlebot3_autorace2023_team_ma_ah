@@ -22,7 +22,7 @@ class ObstacleDetectorState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(ObstacleDetectorState, self).__init__(outcomes=['obstacle', 'no_obstacle'])
+        super(ObstacleDetectorState, self).__init__(outcomes=['obstacle', 'done'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/obstacle_detection": String})
@@ -39,15 +39,15 @@ class ObstacleDetectorState(EventState):
 
             # Assuming 'obstacle_info' is a string that indicates obstacle presence.
             if obstacle_info == "obstacle_detected":
-                self._obstacle_detected = True
+                self._obstacle_detected = "obstacle_detected"
                 return 'obstacle'
             else:
-                self._obstacle_detected = False
-                return 'no_obstacle'
-        else:
-            Logger.loginfo("No obstacle information available.")
-            self._obstacle_detected = False
-            return 'no_obstacle'
+                self._obstacle_detected = "no_obstacle"
+                return 'done'
+        # else:
+        #     Logger.loginfo("No obstacle information available.")
+        #     self._obstacle_detected = False
+        #     return 'done'
 
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

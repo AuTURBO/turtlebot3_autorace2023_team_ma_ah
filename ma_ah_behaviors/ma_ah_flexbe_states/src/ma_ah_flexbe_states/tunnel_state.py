@@ -16,7 +16,7 @@ class TunnelState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(TunnelState, self).__init__(outcomes=['proceed', 'finished'])
+        super(TunnelState, self).__init__(outcomes=['proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/tunnel_info": String})
@@ -34,10 +34,10 @@ class TunnelState(EventState):
             # Assuming 'tunnel_info' is a string that indicates tunnel information.
             if tunnel_info == "dark":
                 return 'proceed'
-        else:
-            Logger.loginfo("No tunnel information available.")
-            # Proceed by default if no information is available.
-            return 'proceed'
+            else:
+                Logger.loginfo("Finished tunnel Mode.")
+                # Proceed by default if no information is available.
+                return 'done'
 
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

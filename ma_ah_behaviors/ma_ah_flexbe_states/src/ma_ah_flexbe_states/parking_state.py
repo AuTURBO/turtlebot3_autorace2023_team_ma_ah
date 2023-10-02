@@ -15,18 +15,18 @@ class ParkingState(EventState):
     Example for a state to detect parking spots.
     This state listens to a topic for parking information and reacts accordingly.
 
-    <= parking_spot_available     Parking spot available.
+    <= parking_proceed     Parking spot available.
     <= no_parking_spot            No parking spot available.
 
     '''
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(ParkingState, self).__init__(outcomes=['parking_spot_available', 'no_parking_spot'])
+        super(ParkingState, self).__init__(outcomes=['parking_proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/parking_detection": String})
-        self._parking_spot_available = False
+        self._parking_proceed = False
 
     def execute(self, userdata):
         # This method is called periodically while the state is active.
@@ -38,16 +38,13 @@ class ParkingState(EventState):
             Logger.loginfo("Parking info: {}".format(parking_info))
 
             # Assuming 'parking_info' is a string that indicates parking spot availability.
-            if parking_info == "parking_spot_available":
-                self._parking_spot_available = True
-                return 'parking_spot_available'
+            if parking_info == "parking_proceed":
+                self._parking_proceed = True
+                return 'parking_proceed'
             else:
-                self._parking_spot_available = False
-                return 'no_parking_spot'
-        else:
-            Logger.loginfo("No parking information available.")
-            self._parking_spot_available = False
-            return 'no_parking_spot'
+                Logger.loginfo("Finished Parking Mode.")
+                self._parking_proceed = False
+                return 'done'
 
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

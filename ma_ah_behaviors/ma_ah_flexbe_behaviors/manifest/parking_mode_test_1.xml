@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="parking_mode_test_1">
+
+	<executable package_path="ma_ah_flexbe_behaviors.parking_mode_test_1_sm" class="parking_mode_test_1SM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>Mon Oct 02 2023</date>
+	<description>
+		enables to robot find and move parking area
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

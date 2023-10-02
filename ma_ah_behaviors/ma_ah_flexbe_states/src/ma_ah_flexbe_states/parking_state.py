@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import rospy
 import numpy as np
-from std_msgs.msg import Float64
+from std_msgs.msg import UInt8, Float64
+from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
+from enum import Enum
+from turtlebot3_autorace_msgs.msg import MovingParam
+
+
 
 class ParkingState(EventState):
     '''
@@ -28,6 +34,25 @@ class ParkingState(EventState):
         self._sub = ProxySubscriberCached({"/parking_detection": String})
         self._parking_proceed = False
 
+        # subscribes state 
+        self.sub_scan_obstacle = rospy.Subscriber('/detect/scan', LaserScan, self.cbScanObstacle, queue_size=1)
+        
+        # publishes state
+        self.pub_parking_return = rospy.Publisher('/detect/parking_stamped', UInt8, queue_size=1)
+        self.pub_moving = rospy.Publisher('/control/moving/state', MovingParam, queue_size= 1)
+        self.pub_max_vel = rospy.Publisher('/control/max_vel', Float64, queue_size = 1)
+
+        self.StepOfParking = Enum('StepOfParking', 'parking exit')
+        self.start_obstacle_detection = False
+        self.is_obstacle_detected_R = False
+        self.is_obstacle_detected_L = False
+
+
+    # def execute(self, userdata):
+        # This method is called periodically while the state is active.
+        # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
+        # If no outcome is returned, the state will stay active.
+
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
@@ -40,7 +65,12 @@ class ParkingState(EventState):
             # Assuming 'parking_info' is a string that indicates parking spot availability.
             if parking_info == "parking_proceed":
                 self._parking_proceed = True
-                return 'parking_proceed'
+                Logger.loginfo("go straight")
+                msg_moving = MovingParam()
+                msg_moving.moving_type= 3
+                msg_moving.moving_value_angular=0.5
+                msg_moving.moving_value_linear=0.45
+                self.pub_moving.publish(msg_moving)
             else:
                 Logger.loginfo("Finished Parking Mode.")
                 self._parking_proceed = False

@@ -29,6 +29,10 @@ class TrafficLightState(EventState):
         self._sub = ProxySubscriberCached({"/traffic_light": String})
         self._traffic_light_signal = None
 
+
+
+
+
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.

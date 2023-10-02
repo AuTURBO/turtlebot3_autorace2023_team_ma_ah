@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import rospy
 import numpy as np
 from std_msgs.msg import Float64
-from std_msgs.msg import Int32
+
 from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
@@ -14,13 +13,13 @@ from std_msgs.msg import String
 
 import math
 
-class ControlLaneState(EventState):
+class ControlLaneStateTo(EventState):
     '''
     Implements a FlexBE state that controls the lane of a robot.
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['proceed', 'left_lane'])
+        super(ControlLaneStateTo, self).__init__(outcomes=['proceed', 'left_lane'])
         
         self.lastError = 0
         self._MAX_VEL = 1.
@@ -38,9 +37,9 @@ class ControlLaneState(EventState):
     # pid control
     def pid_control(self, desired_center):
         center = desired_center
-        error = center - 315
+        error = center - 320
         # 0 - target
-        error = map(error, 100, -100, 2.5, -2.5)
+        # error = map(error, 100, -100, 2.5, -2.5)
         Kp = 0.013
         Ki = 0.000
         Kd = 0.006
@@ -49,7 +48,7 @@ class ControlLaneState(EventState):
         self.lastError = error
         
         twist = Twist()
-        twist.linear.x = 0.02 # min(self._MAX_VEL * ((1 - abs(error) / 315) ** 2.2), 0.05)
+        twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.05)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
         # self
         # self.pub_cmd_vel.publish(twist)
@@ -58,7 +57,7 @@ class ControlLaneState(EventState):
 
     # pure pursuit control
     def pure_pursuit_control(self, desired_center):
-        error = desired_center - 315
+        error = desired_center - 320
         current_angle = error
         # 현재 조향각인 current_angle과 목표값(0으로 가정)을 이용하여 알고리즘을 적용합니다.
         # 다음 줄을 알고리즘에 맞게 수정해주세요.
@@ -71,10 +70,10 @@ class ControlLaneState(EventState):
         self.diff_angle = self.diff_angle * math.pi / 180
 
         angular_z = math.atan2(2.0 * self.WB * math.sin(self.diff_angle), self.Lf)
-
+        print("angular_z: ", angular_z)
 
         twist = Twist()
-        twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 315) ** 2.2), 0.05)
+        twist.linear.x = 0.04# min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.05)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
         # self
         # self.pub_cmd_vel.publish(twist)
@@ -102,7 +101,7 @@ class ControlLaneState(EventState):
         elif self.sub_traffic_sign.has_msg("/traffic_sign"):
             traffic_sign = self.sub_traffic_sign.get_last_msg("/traffic_sign").data
             Logger.loginfo("Traffic sign: {}".format(traffic_sign))
-            return 'traffic_sign'
+            return 'left_lane'
     
 
     def on_exit(self, userdata):

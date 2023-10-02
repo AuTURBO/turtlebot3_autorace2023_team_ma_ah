@@ -70,8 +70,8 @@ class mode_control_test_1SM(Behavior):
 			# x:448 y:139
 			OperatableStateMachine.add('LaneControlMode',
 										ControlLaneState(),
-										transitions={'proceed': 'LaneControlMode', 'traffic_sign': 'TrafficSignMode'},
-										autonomy={'proceed': Autonomy.Off, 'traffic_sign': Autonomy.Off})
+										transitions={'proceed': 'LaneControlMode', 'left_lane': 'LaneControlMode_Left'},
+										autonomy={'proceed': Autonomy.Off, 'left_lane': Autonomy.Off})
 
 			# x:866 y:56
 			OperatableStateMachine.add('LaneControlMode_Left',

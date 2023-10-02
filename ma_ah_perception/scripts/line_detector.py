@@ -130,7 +130,7 @@ def main(frame):
     # angle = angle * 0.5
     print(f"angle: {angle}")
 
-    steer_angle.linear.x = 0.2
+    steer_angle.linear.x = 0.5
     steer_angle.angular.z = angle
 
     # ack_msg.speed = int(20)

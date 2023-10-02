@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="lane_ctrl">
+
+	<executable package_path="ma_ah_flexbe_behaviors.lane_ctrl_sm" class="lane_ctrlSM" />
+	<tagstring></tagstring>
+	<author>ggh</author>
+	<date>Mon Oct 02 2023</date>
+	<description>
+		lane control defalt
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

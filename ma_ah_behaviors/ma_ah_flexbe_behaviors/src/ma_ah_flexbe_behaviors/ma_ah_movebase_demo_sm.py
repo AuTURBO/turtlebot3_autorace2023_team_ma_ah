@@ -42,7 +42,7 @@ class maahmovebasedemoSM(Behavior):
 
 		# Behavior comments:
 
-
+ 
 
 	def create(self):
 		init_waypoint = [-2.0, -2.0, 1]

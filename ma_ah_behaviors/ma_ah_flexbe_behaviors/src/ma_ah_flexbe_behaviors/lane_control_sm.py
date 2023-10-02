@@ -53,11 +53,11 @@ class lane_controlSM(Behavior):
 
 
 		with _state_machine:
-			# x:30 y:40
-			OperatableStateMachine.add('lane',
+			# x:102 y:74
+			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
-										transitions={'done': 'lane', 'failed': 'lane'},
-										autonomy={'done': Autonomy.Off, 'failed': Autonomy.Off})
+										transitions={'proceed': 'lane_control', 'traffic_sign': 'lane_control'},
+										autonomy={'proceed': Autonomy.Off, 'traffic_sign': Autonomy.Off})
 
 
 		return _state_machine

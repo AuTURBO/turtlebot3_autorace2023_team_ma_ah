@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import rospy
 import numpy as np
 from std_msgs.msg import Float64
 from std_msgs.msg import Int32
@@ -12,10 +11,7 @@ from flexbe_core.proxy import ProxyPublisher
 
 from std_msgs.msg import String
 
-<<<<<<< HEAD
-=======
 import math
->>>>>>> origin/feature/state/lane_ctrl
 
 class ControlLaneState(EventState):
     '''
@@ -23,25 +19,15 @@ class ControlLaneState(EventState):
     '''
 
     def __init__(self):
-<<<<<<< HEAD
-        super(ControlLaneState, self).__init__(outcomes=['proceed', 'traffic_sign'])
-        
-        self.lastError = 0
-        self._MAX_VEL = 0.5
-=======
         super(ControlLaneState, self).__init__(outcomes=['proceed', 'left_lane'])
         
         self.lastError = 0
         self._MAX_VEL = 1.
->>>>>>> origin/feature/state/lane_ctrl
         
         self._sub = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
         self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
-<<<<<<< HEAD
-
-=======
 
         # pure pursuit control
         self.WB = 0.20
@@ -96,7 +82,6 @@ class ControlLaneState(EventState):
         # Logger.loginfo("Following lane...")
 
 
->>>>>>> origin/feature/state/lane_ctrl
 
     def on_enter(self, userdata):
         Logger.loginfo("Starting lane control...")
@@ -107,30 +92,16 @@ class ControlLaneState(EventState):
         if self._sub.has_msg("/detect/lane"):
             desired_center = self._sub.get_last_msg("/detect/lane").data
             # pid lane control
-            self.pid_control(desired_center)
+            # self.pid_control(desired_center)
             # pure pursuit lane control
             # self.pure_pursuit_control(desired_center)
             return 'proceed'
         
 
-<<<<<<< HEAD
-            angular_z = Kp * error + Kd * (error - self.lastError)
-            self.lastError = error
-            
-            twist = Twist()
-            twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
-            twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-            # self
-            # self.pub_cmd_vel.publish(twist)
-            self.pub_cmd_vel.publish("/cmd_vel", twist)
-            Logger.loginfo("Following lane...")
-            return 'proceed'
-=======
->>>>>>> origin/feature/state/lane_ctrl
         elif self.sub_traffic_sign.has_msg("/traffic_sign"):
             traffic_sign = self.sub_traffic_sign.get_last_msg("/traffic_sign").data
             Logger.loginfo("Traffic sign: {}".format(traffic_sign))
-            return 'traffic_sign'
+            return 'left_lane'
     
 
     def on_exit(self, userdata):

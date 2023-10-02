@@ -27,6 +27,7 @@ class IntersectionState(EventState):
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/crossroad_sign": String})
+        self._pub = ProxyPublisher({"/cmd_vel": Twist})
         self._crossroad_sign = None
 
     def execute(self, userdata):
@@ -53,7 +54,10 @@ class IntersectionState(EventState):
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.
         # It is typically used to start actions related to this state.
-
+        twist = Twist()
+        twist.linear.x = 0.0
+        twist.angular.z = 0.0
+        self._pub.publish("/cmd_vel", twist)
         Logger.loginfo('Entered state Intersection Mode')
 
     # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.

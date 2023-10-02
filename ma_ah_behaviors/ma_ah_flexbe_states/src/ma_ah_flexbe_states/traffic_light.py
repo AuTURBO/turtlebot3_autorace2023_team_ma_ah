@@ -27,6 +27,7 @@ class TrafficLightState(EventState):
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/traffic_light": String})
+        self._pub = ProxyPublisher({"/cmd_vel": Twist})
         self._traffic_light_signal = None
 
     def execute(self, userdata):
@@ -44,10 +45,17 @@ class TrafficLightState(EventState):
                 return 'green_light'
             elif traffic_light_info in ["red", "yellow"]:
                 self._traffic_light_signal = "red_or_yellow"
+                twist = Twist()
+                twist.linear.x = 0.0
+                twist.angular.z = 0.0
+                self._pub.publish("/cmd_vel", twist)
                 return 'red_or_yellow_light'
         else:
             Logger.loginfo("No traffic light signal available.")
-            self._traffic_light_signal = None
+            twist = Twist()
+            twist.linear.x = 0.0
+            twist.angular.z = 0.0
+            self._pub.publish("/cmd_vel", twist)
             return 'no_signal'
 
     def on_enter(self, userdata):

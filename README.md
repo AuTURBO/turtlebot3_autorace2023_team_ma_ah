@@ -109,8 +109,6 @@ roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map
 ```bash
 ```
 
-```
-
 ### yolov7_TensorRT (Jetson Xavier)
 ```
 ```

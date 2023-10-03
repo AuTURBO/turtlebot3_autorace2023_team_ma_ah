@@ -107,13 +107,15 @@ roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map
 ### lane detecting
 
 ```bash
-roslaunch turtlebot3_autorace_camera intrinsic_camera_calibration.launch
 ```
 
-```bash
-roslaunch turtlebot3_autorace_camera extrinsic_camera_calibration.launch
 ```
 
-```bash
-roslaunch turtlebot3_autorace_detect detect_lane.launch mode:=calibration
+### yolov7_TensorRT (Jetson Xavier)
+```
+```
+
+### yolov7 for gazebo
+```
+roslaunch yolov7 yolov7.launch
 ```

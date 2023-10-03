@@ -19,8 +19,8 @@ if __name__ == "__main__":
     # visualize = rospy.get_param(ns + "visualize", True)
 
     input_img_topic = "/camera/image/compressed"
-    output_img_topic = "/yolov7/image_raw"
-    output_topic = "yolo/detections"
+    output_img_topic = "/yolov7/visualize/image"
+    output_topic = "/yolov7/detection"
     conf_thresh = 0.3
     img_size = 320
     visualize = True

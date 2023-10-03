@@ -16,7 +16,7 @@ objp[:,:2] = np.mgrid[0:corner_width,0:corner_height].T.reshape(-1,2)
 # Arrays to store object points and image points from all the images.
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
-images = glob.glob('./calibration_img/img*.png')
+images = glob.glob('./cali_usb_cam/img*.png')
 
 for fname in images:
     print(img_num)
@@ -89,7 +89,7 @@ newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 0)
 ## 전체를 보고 싶다면 1, 펴진 부분만 보고 싶다면 0에 가깝게 인자 값을 주면 된다
 #dst = cv2.undistort(origin, mtx, dist)  ## getOptimalNewCameraMatrix 함수를 쓰지 않은 이미지
 dst2 = cv2.undistort(origin, mtx, dist, None, newcameramtx)  ## 함수를 쓴 이미지
-cv2.imshow('num1', dst)
+# cv2.imshow('num1', dst)
 cv2.imshow('num2', dst2)
 print("end")
 cv2.waitKey(0)

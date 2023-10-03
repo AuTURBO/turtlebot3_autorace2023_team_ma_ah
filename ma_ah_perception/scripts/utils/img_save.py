@@ -2,12 +2,13 @@ import cv2
 import os
 import rospy
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import CompressedImage
 
-path = './calibration_img/'
+path = './cali_usb_cam/'
 img_name = 'img'
 
-current_directory = os.getcwd() + '/calibration_img'
+current_directory = os.getcwd() + '/cali_usb_cam'
 
 
 
@@ -45,7 +46,8 @@ def main(frame):
 def image_callback(msg):
     global lane_bin_th
     try:
-        cv_image = CvBridge().imgmsg_to_cv2(msg, "bgr8")
+        #cv_image = CvBridge().imgmsg_to_cv2(msg, "bgr8")
+        cv_image = CvBridge().compressed_imgmsg_to_cv2(msg, "bgr8")
     except CvBridgeError as e:
         print(e)
     else:
@@ -58,9 +60,11 @@ def start():
     #global steer_angle_publisher
     print("Start")
     rospy.init_node('img_save')
-    image_topic = "/camera/image"
+    image_topic = "/camera/image/compressed"
 
-    rospy.Subscriber(image_topic, Image, image_callback)
+    rospy.Subscriber(image_topic, CompressedImage, image_callback)
+
+
     #ack_publisher = rospy.Publisher('xycar_motor', xycar_motor, queue_size=1)
     #steer_angle_publisher = rospy.Publisher('xycar_angle', Int32, queue_size=1)
     rospy.spin()

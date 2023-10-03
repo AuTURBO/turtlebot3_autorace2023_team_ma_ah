@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import os
@@ -119,11 +119,11 @@ def main(frame):
     #print(f"filtered_target: {target}")
 
     angle = 320 - target
-    angle = map(angle, 100, -100, 2.5, -2.)
+    angle = map(angle, 100, -100, 1.0, -1.0)
     # angle = angle * 0.5
     print(f"angle: {angle}")
 
-    steer_angle.linear.x = 0.2
+    steer_angle.linear.x = 0.1
     steer_angle.angular.z = angle
 
     # ack_msg.speed = int(20)
@@ -329,7 +329,8 @@ def detect_lane(img, window_name):
 def image_callback(msg):
     global lane_bin_th
     try:
-        cv_image = CvBridge().imgmsg_to_cv2(msg, "bgr8")
+        # cv_image = CvBridge().imgmsg_to_cv2(msg, "bgr8")
+        cv_image = CvBridge().compressed_imgmsg_to_cv2(msg, "bgr8")
     except CvBridgeError as e:
         print(e)
     else:
@@ -341,9 +342,9 @@ def start():
     global ack_publisher
     global steer_angle_publisher
     rospy.init_node("image_listener")
-    image_topic = "/camera/image"
+    image_topic = "/camera/image/compressed"
 
-    rospy.Subscriber(image_topic, Image, image_callback)
+    rospy.Subscriber(image_topic, CompressedImage, image_callback)
     #ack_publisher = rospy.Publisher('xycar_motor', xycar_motor, queue_size=1)
     steer_angle_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
     rospy.spin()

@@ -9,7 +9,7 @@ def undistort_func(frame):
     filePath = __file__    
     path, filename = os.path.split(filePath)
     #print("Script file path is {}, filename is {}".format(path, filename))
-    yaml_path = path + "/Calibration_result.yaml" 
+    yaml_path = path + "/utils/Calibration_result.yaml" 
     # load
     with open(yaml_path) as f:
         yaml_data = yaml.load(f, Loader=yaml.SafeLoader)

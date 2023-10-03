@@ -7,12 +7,12 @@ import cv2
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-from preprocessor import PreProcessor
+from ma_ah_perception.preprocessor import PreProcessor
 
 from std_msgs.msg import Int32
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
-from utils import undistort
+from ma_ah_perception.undistort import undistort_func
 import sys 
 
 
@@ -87,7 +87,7 @@ def main(frame):
 
     # cv2.imshow("Distort", frame)
 
-    frame = undistort.undistort_func(frame)
+    frame = undistort_func(frame)
 
     cv2.imshow("Undistort", frame)
 

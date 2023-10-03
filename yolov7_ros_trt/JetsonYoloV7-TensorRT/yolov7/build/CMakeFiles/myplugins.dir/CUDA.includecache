@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/config.h
+
+../include/cuda_utils.h
+cuda_runtime_api.h
+-
+
+../include/macros.h
+NvInfer.h
+../include/NvInfer.h
+
+../include/types.h
+config.h
+../include/config.h
+
+/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.cu
+yololayer.h
+/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
+cuda_utils.h
+/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/cuda_utils.h
+assert.h
+-
+vector
+-
+iostream
+-
+
+/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
+macros.h
+/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/macros.h
+types.h
+/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/types.h
+vector
+-
+string
+-
+

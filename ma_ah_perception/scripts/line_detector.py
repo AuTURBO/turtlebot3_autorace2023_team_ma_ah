@@ -126,11 +126,7 @@ def main(frame):
     #print(f"filtered_target: {target}")
 
     angle = 320 - target
-<<<<<<< HEAD
     angle = map(angle, 100, -100, 1.0, -1.0)
-=======
-    angle = map(angle, 100, -100, 2.5, -2.5)
->>>>>>> 5de50907622468072c4ad42931c12f4f0380523e
     # angle = angle * 0.5
     # print(f"angle: {angle}")
 

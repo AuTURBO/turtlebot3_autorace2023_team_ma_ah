@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import rospy
 import numpy as np
 from std_msgs.msg import Float64
 from std_msgs.msg import Int32
@@ -11,7 +12,6 @@ from flexbe_core.proxy import ProxyPublisher
 
 from std_msgs.msg import String
 
-import math
 
 class ControlLaneState(EventState):
     '''
@@ -19,69 +19,15 @@ class ControlLaneState(EventState):
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['proceed', 'left_lane'])
+        super(ControlLaneState, self).__init__(outcomes=['proceed', 'traffic_sign'])
         
         self.lastError = 0
-        self._MAX_VEL = 1.
+        self._MAX_VEL = 0.5
         
         self._sub = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
         self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
-
-        # pure pursuit control
-        self.WB = 0.20
-        self.Lf = 0.20
-
-
-    # pid control
-    def pid_control(self, desired_center):
-        center = desired_center
-        error = center - 315
-        # 0 - target
-        error = map(error, 100, -100, 2.5, -2.5)
-        Kp = 0.013
-        Ki = 0.000
-        Kd = 0.006
-
-        angular_z = Kp * error + Kd * (error - self.lastError) + Ki * (error + self.lastError)
-        self.lastError = error
-        
-        twist = Twist()
-        twist.linear.x = 0.02 # min(self._MAX_VEL * ((1 - abs(error) / 315) ** 2.2), 0.05)
-        twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-        # self
-        # self.pub_cmd_vel.publish(twist)
-        self.pub_cmd_vel.publish("/cmd_vel", twist)
-        Logger.loginfo("Following lane...")
-
-    # pure pursuit control
-    def pure_pursuit_control(self, desired_center):
-        error = desired_center - 315
-        current_angle = error
-        # 현재 조향각인 current_angle과 목표값(0으로 가정)을 이용하여 알고리즘을 적용합니다.
-        # 다음 줄을 알고리즘에 맞게 수정해주세요.
-        target_angle = 0  # -5  # 여기에 Pure Pursuit 알고리즘을 적용하여 목표 조향각을 계산합니다.
-
-        # 현재 조향각과 목표 조향각과의 차이를 계산합니다.
-        self.diff_angle = target_angle - current_angle
-
-        # degree to radian
-        self.diff_angle = self.diff_angle * math.pi / 180
-
-        angular_z = math.atan2(2.0 * self.WB * math.sin(self.diff_angle), self.Lf)
-
-
-        twist = Twist()
-        twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 315) ** 2.2), 0.05)
-        twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-        # self
-        # self.pub_cmd_vel.publish(twist)
-        self.pub_cmd_vel.publish("/cmd_vel", twist)
-        # print("angular_z: ", angular_z)
-        # Logger.loginfo("Following lane...")
-
-
 
     def on_enter(self, userdata):
         Logger.loginfo("Starting lane control...")
@@ -92,16 +38,27 @@ class ControlLaneState(EventState):
         if self._sub.has_msg("/detect/lane"):
             desired_center = self._sub.get_last_msg("/detect/lane").data
             # pid lane control
-            # self.pid_control(desired_center)
+            self.pid_control(desired_center)
             # pure pursuit lane control
             # self.pure_pursuit_control(desired_center)
             return 'proceed'
         
 
+            angular_z = Kp * error + Kd * (error - self.lastError)
+            self.lastError = error
+            
+            twist = Twist()
+            twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
+            twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
+            # self
+            # self.pub_cmd_vel.publish(twist)
+            self.pub_cmd_vel.publish("/cmd_vel", twist)
+            Logger.loginfo("Following lane...")
+            return 'proceed'
         elif self.sub_traffic_sign.has_msg("/traffic_sign"):
             traffic_sign = self.sub_traffic_sign.get_last_msg("/traffic_sign").data
             Logger.loginfo("Traffic sign: {}".format(traffic_sign))
-            return 'left_lane'
+            return 'traffic_sign'
     
 
     def on_exit(self, userdata):

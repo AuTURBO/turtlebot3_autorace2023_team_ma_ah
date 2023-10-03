@@ -4,7 +4,6 @@ import rospy
 import cv2
 import numpy as np
 from sensor_msgs.msg import CompressedImage
-from preprocessor import PreProcessor
 
 def camera_publisher():
     # Initialize the node with the name 'camera_publisher'

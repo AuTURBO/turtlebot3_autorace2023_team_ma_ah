@@ -1,0 +1,7 @@
+intersection
+left
+obstacle
+parking
+right
+tune
+tunnel

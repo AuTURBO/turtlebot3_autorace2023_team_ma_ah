@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="ma ah autorace fsm">
+
+	<executable package_path="ma_ah_flexbe_behaviors.ma_ah_autorace_fsm_sm" class="maahautoracefsmSM" />
+	<tagstring></tagstring>
+	<author>ggh-png</author>
+	<date>Tue Oct 03 2023</date>
+	<description>
+		ma ah autorace fsm
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="mission 1 traffic light" />
+	<contains name="mission 2 cross line " />
+	<contains name="mission 3 obstacle avoidence" />
+
+	<!-- Available Parameters -->
+
+</behavior>

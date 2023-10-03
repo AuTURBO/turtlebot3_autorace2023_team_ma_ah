@@ -8,8 +8,8 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from flexbe_states.log_state import LogState
-from flexbe_states.wait_state import WaitState
+from ma_ah_flexbe_states.lane_control_2 import ControlLaneStateTo
+from ma_ah_flexbe_states.traffic_light import TrafficLightState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -17,21 +17,20 @@ from flexbe_states.wait_state import WaitState
 
 
 '''
-Created on Wed Sep 13 2023
+Created on Mon Oct 02 2023
 @author: ggh-png
 '''
-class maahtestSM(Behavior):
+class mission1trafficlightSM(Behavior):
 	'''
-	test demo
+	ma ah mission 1 traffic light
 	'''
 
 
 	def __init__(self):
-		super(maahtestSM, self).__init__()
-		self.name = 'ma ah test'
+		super(mission1trafficlightSM, self).__init__()
+		self.name = 'mission 1 traffic light'
 
 		# parameters of this behavior
-		self.add_parameter('waiting_time', 2)
 
 		# references to used behaviors
 
@@ -45,7 +44,6 @@ class maahtestSM(Behavior):
 
 
 	def create(self):
-		hello = "ma~~~ah~~"
 		# x:30 y:365, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 
@@ -56,17 +54,17 @@ class maahtestSM(Behavior):
 
 
 		with _state_machine:
-			# x:185 y:87
-			OperatableStateMachine.add('init_wait',
-										WaitState(wait_time=self.waiting_time),
-										transitions={'done': 'print_log'},
-										autonomy={'done': Autonomy.Off})
+			# x:189 y:76
+			OperatableStateMachine.add('traffic_lane_control',
+										ControlLaneStateTo(),
+										transitions={'lane_control': 'traffic_lane_control', 'mission_control': 'traffic_light'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off})
 
-			# x:147 y:198
-			OperatableStateMachine.add('print_log',
-										LogState(text=hello, severity=Logger.REPORT_HINT),
-										transitions={'done': 'finished'},
-										autonomy={'done': Autonomy.High})
+			# x:430 y:139
+			OperatableStateMachine.add('traffic_light',
+										TrafficLightState(),
+										transitions={'green_light': 'finished', 'red_or_yellow_light': 'traffic_light', 'no_signal': 'traffic_light'},
+										autonomy={'green_light': Autonomy.Off, 'red_or_yellow_light': Autonomy.Off, 'no_signal': Autonomy.Off})
 
 
 		return _state_machine

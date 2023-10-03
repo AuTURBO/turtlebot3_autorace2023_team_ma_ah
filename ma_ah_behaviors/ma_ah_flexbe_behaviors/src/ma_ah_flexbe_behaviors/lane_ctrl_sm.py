@@ -8,7 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from ma_ah_flexbe_states.lane_control import ControlLaneState
+from ma_ah_flexbe_states.lane_control_2 import ControlLaneStateTo
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -16,18 +16,18 @@ from ma_ah_flexbe_states.lane_control import ControlLaneState
 
 
 '''
-Created on Thu Sep 21 2023
-@author: gg
+Created on Mon Oct 02 2023
+@author: ggh
 '''
-class lane_controlSM(Behavior):
+class lane_ctrlSM(Behavior):
 	'''
-	s
+	lane control defalt
 	'''
 
 
 	def __init__(self):
-		super(lane_controlSM, self).__init__()
-		self.name = 'lane_control'
+		super(lane_ctrlSM, self).__init__()
+		self.name = 'lane_ctrl'
 
 		# parameters of this behavior
 
@@ -53,11 +53,11 @@ class lane_controlSM(Behavior):
 
 
 		with _state_machine:
-			# x:102 y:74
-			OperatableStateMachine.add('lane_control',
-										ControlLaneState(),
-										transitions={'proceed': 'lane_control', 'traffic_sign': 'lane_control'},
-										autonomy={'proceed': Autonomy.Off, 'traffic_sign': Autonomy.Off})
+			# x:271 y:191
+			OperatableStateMachine.add('test',
+										ControlLaneStateTo(),
+										transitions={'proceed': 'test', 'left_lane': 'test'},
+										autonomy={'proceed': Autonomy.Off, 'left_lane': Autonomy.Off})
 
 
 		return _state_machine

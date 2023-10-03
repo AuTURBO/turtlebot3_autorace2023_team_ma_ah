@@ -1,110 +1,104 @@
 TebLocalPlannerROS:
 
- odom_topic: odom
-    
- # Trajectory
-  
- teb_autosize: True
- dt_ref: 0.3
- dt_hysteresis: 0.1
- max_samples: 500
- global_plan_overwrite_orientation: True
- allow_init_with_backwards_motion: False
- max_global_plan_lookahead_dist: 3.0
- global_plan_viapoint_sep: -1
- global_plan_prune_distance: 1
- exact_arc_length: False
- feasibility_check_no_poses: 5
- publish_feedback: False
-    
- # Robot
-         
- max_vel_x: 0.4
- max_vel_x_backwards: 0.2
- max_vel_y: 0.0
- max_vel_theta: 0.3
- acc_lim_x: 0.5
- acc_lim_theta: 0.5
- min_turning_radius: 0.0 # diff-drive robot (can turn on place!)
+  # 오도메트리 토픽 설정
+  odom_topic: odom
 
- footprint_model:
-   type: "point"
+  # Trajectory 관련 설정
+  teb_autosize: True  # Trajectory 크기 자동 조정 여부
+  dt_ref: 0.3  # Trajectory 참조 시간 간격 (초)
+  dt_hysteresis: 0.1  # Trajectory 시간 간격 히스테리시스 값 (초)
+  max_samples: 500  # Trajectory 최대 샘플 수
+  global_plan_overwrite_orientation: True  # 글로벌 경로의 오리엔테이션 덮어쓰기 여부
+  allow_init_with_backwards_motion: False  # 후진 운동 초기화 허용 여부
+  max_global_plan_lookahead_dist: 3.0  # 글로벌 경로에서의 최대 전망 거리
+  global_plan_viapoint_sep: -1  # 글로벌 경로 상의 경유지 포인트 간의 최소 거리
+  global_plan_prune_distance: 1  # 글로벌 경로 가장자리 부분 제거 거리
+  exact_arc_length: False  # Trajectory에서 정확한 호 길이 사용 여부
 
- # GoalTolerance
-    
- xy_goal_tolerance: 0.2
- yaw_goal_tolerance: 0.1
- free_goal_vel: False
- complete_global_plan: True
-    
- # Obstacles
-    
- min_obstacle_dist: 0.25 # This value must also include our robot radius, since footprint_model is set to "point".
- inflation_dist: 0.6
- include_costmap_obstacles: True
- costmap_obstacles_behind_robot_dist: 1.5
- obstacle_poses_affected: 15
+  # 로봇 관련 설정
+  max_vel_x: 0.1  # 로봇의 최대 전진 속도
+  max_vel_x_backwards: 0.1  # 로봇의 최대 후진 속도
+  max_vel_y: 0.0  # 로봇의 최대 좌우 이동 속도
+  max_vel_theta: 0.3  # 로봇의 최대 각속도
+  acc_lim_x: 0.5  # 로봇의 전진 가속도 한계
+  acc_lim_theta: 0.5  # 로봇의 회전 가속도 한계
+  min_turning_radius: 0.0  # 회전 가능한 최소 반지름 (위치에 따라 회전하지 않을 수 있음)
 
- dynamic_obstacle_inflation_dist: 0.6
- include_dynamic_obstacles: True
+  # 로봇 발 형태 모델 설정
+  footprint_model:
+    type: "point"  # 발 형태 모델 유형
 
- costmap_converter_plugin: ""
- costmap_converter_spin_thread: True
- costmap_converter_rate: 5
+  # 목표 지점 허용 오차 설정
+  xy_goal_tolerance: 0.2  # 목표 위치까지의 허용 오차 (미터)
+  yaw_goal_tolerance: 0.1  # 목표 방향까지의 허용 오차 (라디안)
+  free_goal_vel: False  # 목표 지점 도달 시 로봇 속도 자유화 여부
+  complete_global_plan: True  # 글로벌 경로 완료 여부
 
- # Optimization
-    
- no_inner_iterations: 5
- no_outer_iterations: 4
- optimization_activate: True
- optimization_verbose: False
- penalty_epsilon: 0.1
- obstacle_cost_exponent: 4
- weight_max_vel_x: 2
- weight_max_vel_theta: 1
- weight_acc_lim_x: 1
- weight_acc_lim_theta: 1
- weight_kinematics_nh: 1000
- weight_kinematics_forward_drive: 1
- weight_kinematics_turning_radius: 1
- weight_optimaltime: 1 # must be > 0
- weight_shortest_path: 0
- weight_obstacle: 100
- weight_inflation: 0.2
- weight_dynamic_obstacle: 10
- weight_dynamic_obstacle_inflation: 0.2
- weight_viapoint: 1
- weight_adapt_factor: 2
+  # 장애물 관련 설정
+  min_obstacle_dist: 0.05  # 장애물로 간주되는 최소 거리 (로봇 반지름 포함, 미터)
+  inflation_dist: 0.05  # 장애물 팽창 반지름 (미터)
+  include_costmap_obstacles: True  # 코스트맵 장애물 포함 여부
+  costmap_obstacles_behind_robot_dist: 1.5  # 로봇 뒤의 코스트맵 장애물 고려 거리 (미터)
+  obstacle_poses_affected: 15  # 영향을 주는 장애물 포즈 수
 
- # Homotopy Class Planner
+  dynamic_obstacle_inflation_dist: 0.05  # 동적 장애물 팽창 반지름 (미터)
+  include_dynamic_obstacles: True  # 동적 장애물 포함 여부
 
- enable_homotopy_class_planning: True
- enable_multithreading: True
- max_number_classes: 4
- selection_cost_hysteresis: 1.0
- selection_prefer_initial_plan: 0.9
- selection_obst_cost_scale: 100.0
- selection_alternative_time_cost: False
- 
- roadmap_graph_no_samples: 15
- roadmap_graph_area_width: 5
- roadmap_graph_area_length_scale: 1.0
- h_signature_prescaler: 0.5
- h_signature_threshold: 0.1
- obstacle_heading_threshold: 0.45
- switching_blocking_period: 0.0
- viapoints_all_candidates: True
- delete_detours_backwards: True
- max_ratio_detours_duration_best_duration: 3.0
- visualize_hc_graph: False
- visualize_with_time_as_z_axis_scale: False
+  costmap_converter_plugin: ""  # 코스트맵 변환 플러그인
+  costmap_converter_spin_thread: True  # 코스트맵 변환 스레드 스핀 여부
+  costmap_converter_rate: 5  # 코스트맵 변환 주파수 (Hz)
 
-# Recovery
- 
- shrink_horizon_backup: True
- shrink_horizon_min_duration: 10
- oscillation_recovery: True
- oscillation_v_eps: 0.1
- oscillation_omega_eps: 0.1
- oscillation_recovery_min_duration: 10
- oscillation_filter_duration: 10
+  # 경로 최적화 관련 설정
+  no_inner_iterations: 5  # 내부 최적화 반복 횟수
+  no_outer_iterations: 4  # 외부 최적화 반복 횟수
+  optimization_activate: True  # 최적화 활성화 여부
+  optimization_verbose: False  # 최적화 자세한 로그 출력 여부
+  penalty_epsilon: 0.1  # 패널티 이파실론
+  obstacle_cost_exponent: 4  # 장애물 코스트 지수
+  weight_max_vel_x: 2  # 최대 전진 속도 가중치
+  weight_max_vel_theta: 1  # 최대 각속도 가중치
+  weight_acc_lim_x: 1  # 가속도 한계 가중치
+  weight_acc_lim_theta: 1  # 회전 가속도 한계 가중치
+  weight_kinematics_nh: 1000  # 로봇 비-홀로노믹 경로 생성 가중치
+  weight_kinematics_forward_drive: 1  # 전진 운전 경로 생성 가중치
+  weight_kinematics_turning_radius: 1  # 회전 반경 경로 생성 가중치
+  weight_optimaltime: 1  # 최적 시간 가중치 (0보다 커야 함)
+  weight_shortest_path: 0  # 최단 경로 가중치
+  weight_obstacle: 100  # 장애물 가중치
+  weight_inflation: 0.2  # 장애물 팽창 가중치
+  weight_dynamic_obstacle: 10  # 동적 장애물 가중치
+  weight_dynamic_obstacle_inflation: 0.2  # 동적 장애물 팽창 가중치
+  weight_viapoint: 1  # 경유지 가중치
+  weight_adapt_factor: 2  # 적응 가중치 팩터
+
+  # Homotopy Class Planner 관련 설정
+  enable_homotopy_class_planning: True  # 호모토피 클래스 경로 계획 활성화 여부
+  enable_multithreading: True  # 다중 스레딩 활성화 여부
+  max_number_classes: 4  # 최대 호모토피 클래스 수
+  selection_cost_hysteresis: 1.0  # 경로 선택 비용 히스테리시스 값
+  selection_prefer_initial_plan: 0.9  # 초기 경로 우선 선택 가중치
+  selection_obst_cost_scale: 100.0  # 장애물 비용 스케일
+  selection_alternative_time_cost: False  # 대체 시간 비용 사용 여부
+
+  # 로드맵 그래프 관련 설정
+  roadmap_graph_no_samples: 15  # 로드맵 그래프 샘플 수
+  roadmap_graph_area_width: 5  # 로드맵 그래프 영역 폭 (미터)
+  roadmap_graph_area_length_scale: 1.0  # 로드맵 그래프 영역 길이 스케일
+  h_signature_prescaler: 0.5  # H-Signature 프리스케일러
+  h_signature_threshold: 0.1  # H-Signature 임계값
+  obstacle_heading_threshold: 0.45  # 장애물 방향 임계값
+  switching_blocking_period: 0.0  # 전환 블로킹 기간
+  viapoints_all_candidates: True  # 모든 경유지 후보 사용 여부
+  delete_detours_backwards: True  # 역방향 주행 경로 삭제 여부
+  max_ratio_detours_duration_best_duration: 3.0  # 주행 경로 대 최적 경로 지속 시간 최대 비율
+  visualize_hc_graph: False  # 호모토피 클래스 그래프 시각화 여부
+  visualize_with_time_as_z_axis_scale: False  # 시간을 Z축 스케일로 시각화 여부
+
+# 복구 관련 설정
+shrink_horizon_backup: True  # 복원 기간 축소 여부
+shrink_horizon_min_duration: 10  # 최소 축소 기간 (초)
+oscillation_recovery: True  # 진동 복구 활성화 여부
+oscillation_v_eps: 0.1  # 진동 선형 속도 임계값
+oscillation_omega_eps: 0.1  # 진동 각속도 임계값
+oscillation_recovery_min_duration: 10  # 진동 복구 최소 기간 (초)
+oscillation_filter_duration: 10  # 진동 필터링 기간 (초)

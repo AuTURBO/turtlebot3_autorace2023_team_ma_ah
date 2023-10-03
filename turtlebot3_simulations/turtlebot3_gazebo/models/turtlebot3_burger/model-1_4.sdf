@@ -40,7 +40,7 @@
         <pose>-0.081 0 -0.004 0 0 0</pose>
         <geometry>
           <sphere>
-            <radius>0.005000</radius>
+            <radius>0.005500</radius>
           </sphere>
         </geometry>
         <surface>
@@ -138,7 +138,7 @@
         <pose>0 0.08 0.023 -1.57 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.033</radius>
+            <radius>0.055</radius>
             <length>0.018</length>
           </cylinder>
         </geometry>
@@ -186,7 +186,7 @@
         <pose>0.0 -0.08 0.023 -1.57 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.033</radius>
+            <radius>0.055</radius>
             <length>0.018</length>
           </cylinder>
         </geometry>

@@ -1,14 +1,13 @@
 local_costmap:
-  global_frame: odom
-  robot_base_frame: base_footprint
+  global_frame: odom  # 코스트맵의 글로벌 프레임 (장애물 위치가 표현될 프레임)
+  robot_base_frame: base_footprint  # 로봇 베이스 프레임 (로봇의 중심 프레임)
 
-  update_frequency: 10.0
-  publish_frequency: 10.0
-  transform_tolerance: 0.5  
+  update_frequency: 10.0  # 코스트맵 업데이트 주파수 (Hz)
+  publish_frequency: 10.0  # 코스트맵 발행 주파수 (Hz)
+  transform_tolerance: 0.5  # 변환 허용 시간 (로봇 프레임과 코스트맵 프레임 사이의 변환 허용 시간)
 
-  static_map: false  
-  rolling_window: true
-  width: 3
-  height: 3
-  resolution: 0.05
-  
+  static_map: false  # 정적 맵 사용 여부 (보통 정적 맵을 사용하지 않음)
+  rolling_window: true  # 로링 윈도우 모드 활성화 여부 (로봇 주변의 영역만 코스트맵으로 관리)
+  width: 3  # 코스트맵 폭 (미터)
+  height: 3  # 코스트맵 높이 (미터)
+  resolution: 0.05  # 코스트맵 해상도 (미터/픽셀)

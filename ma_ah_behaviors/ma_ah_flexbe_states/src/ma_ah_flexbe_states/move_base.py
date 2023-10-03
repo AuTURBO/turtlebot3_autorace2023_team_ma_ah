@@ -13,6 +13,24 @@ Created on 11/19/2015
 
 @author: Spyros Maniatopoulos
 """
+# 터미널 명령어
+# rostopic pub /move_base_simple/goal geometry_msgs/PoseStamped "header:
+#   seq: 0
+#   stamp:
+#     secs: 0
+#     nsecs: 0
+#   frame_id: 'map'
+# pose:
+#   position:
+#     x: 0.8
+#     y: 3.65
+#     z: 0.0
+#   orientation:
+#     x: 0.0
+#     y: 0.0
+#     z: 3.14
+#     w: 0.0" 
+
 
 #MoveBaseState 클래스 정의
 class MoveBaseState(EventState):

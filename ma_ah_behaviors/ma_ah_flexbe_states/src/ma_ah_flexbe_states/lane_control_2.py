@@ -3,7 +3,7 @@
 
 import numpy as np
 from std_msgs.msg import Float64
-from std_msgs.msg import Int32
+
 from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
@@ -13,16 +13,16 @@ from std_msgs.msg import String
 
 import math
 
-class ControlLaneState(EventState):
+class ControlLaneStateTo(EventState):
     '''
     Implements a FlexBE state that controls the lane of a robot.
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['proceed', 'left_lane'])
+        super(ControlLaneStateTo, self).__init__(outcomes=['lane_control', 'mission_control'])
         
         self.lastError = 0
-        self._MAX_VEL = 1.
+        self._MAX_VEL = 0.5
         
         self._sub = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
@@ -37,18 +37,18 @@ class ControlLaneState(EventState):
     # pid control
     def pid_control(self, desired_center):
         center = desired_center
-        error = center - 315
+        error = center - 320
         # 0 - target
-        error = map(error, 100, -100, 2.5, -2.5)
+        # error = map(error, 100, -100, 2.5, -2.5)
         Kp = 0.013
-        Ki = 0.000
+        Ki = 0.001
         Kd = 0.006
 
-        angular_z = Kp * error + Kd * (error - self.lastError) + Ki * (error + self.lastError)
+        angular_z = Kp * error + Kd * (error - self.lastError) + Ki * (error)
         self.lastError = error
         
         twist = Twist()
-        twist.linear.x = 0.02 # min(self._MAX_VEL * ((1 - abs(error) / 315) ** 2.2), 0.05)
+        twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.06)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
         # self
         # self.pub_cmd_vel.publish(twist)
@@ -57,7 +57,7 @@ class ControlLaneState(EventState):
 
     # pure pursuit control
     def pure_pursuit_control(self, desired_center):
-        error = desired_center - 315
+        error = desired_center - 310
         current_angle = error
         # 현재 조향각인 current_angle과 목표값(0으로 가정)을 이용하여 알고리즘을 적용합니다.
         # 다음 줄을 알고리즘에 맞게 수정해주세요.
@@ -70,39 +70,36 @@ class ControlLaneState(EventState):
         self.diff_angle = self.diff_angle * math.pi / 180
 
         angular_z = math.atan2(2.0 * self.WB * math.sin(self.diff_angle), self.Lf)
-
+        print("angular_z: ", angular_z)
 
         twist = Twist()
-        twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 315) ** 2.2), 0.05)
+        twist.linear.x = min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.05)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-        # self
-        # self.pub_cmd_vel.publish(twist)
         self.pub_cmd_vel.publish("/cmd_vel", twist)
-        # print("angular_z: ", angular_z)
+
         # Logger.loginfo("Following lane...")
 
 
 
     def on_enter(self, userdata):
         Logger.loginfo("Starting lane control...")
-        # if self._sub.has_msg("/traffic_sign"):
+
             
 
     def execute(self, userdata):
-        if self._sub.has_msg("/detect/lane"):
-            desired_center = self._sub.get_last_msg("/detect/lane").data
-            # pid lane control
-            # self.pid_control(desired_center)
-            # pure pursuit lane control
-            # self.pure_pursuit_control(desired_center)
-            return 'proceed'
-        
-
-        elif self.sub_traffic_sign.has_msg("/traffic_sign"):
+        if self.sub_traffic_sign.has_msg("/traffic_sign"):
             traffic_sign = self.sub_traffic_sign.get_last_msg("/traffic_sign").data
             Logger.loginfo("Traffic sign: {}".format(traffic_sign))
-            return 'left_lane'
+            return 'mission_control'
     
+        if self._sub.has_msg("/detect/lane"):
+            desired_center = self._sub.get_last_msg("/detect/lane").data
+            # pid lane control 
+            # self.pure_pursuit_control(desired_center)
+            self.pid_control(desired_center)
+            return 'lane_control'
+        
+
 
     def on_exit(self, userdata):
         # 이 메서드는 결과가 반환되고 다른 상태가 활성화될 때 호출됩니다.

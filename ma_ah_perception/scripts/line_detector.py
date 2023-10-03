@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from preprocessor import PreProcessor
 
 from std_msgs.msg import Int32
+from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 from utils import undistort
 import sys 
@@ -17,6 +18,9 @@ import sys
 
 steer_angle = Twist()
 steer_angle_publisher = None
+
+center_lane = Float64()
+center_lane_publisher = None
 
 lane_bin_th = 120  # 145
 frameWidth = 0
@@ -74,6 +78,9 @@ def main(frame):
 
     global steer_angle
 
+    global center_lane_publisher
+    global center_lane
+
     prev_target = 320
     frameRate = 11 #33
     frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
@@ -119,9 +126,13 @@ def main(frame):
     #print(f"filtered_target: {target}")
 
     angle = 320 - target
+<<<<<<< HEAD
     angle = map(angle, 100, -100, 1.0, -1.0)
+=======
+    angle = map(angle, 100, -100, 2.5, -2.5)
+>>>>>>> 5de50907622468072c4ad42931c12f4f0380523e
     # angle = angle * 0.5
-    print(f"angle: {angle}")
+    # print(f"angle: {angle}")
 
     steer_angle.linear.x = 0.1
     steer_angle.angular.z = angle
@@ -133,7 +144,12 @@ def main(frame):
 
     # steer_angle.data = int(angle)
 
-    steer_angle_publisher.publish(steer_angle)
+    # steer_angle_publisher.publish(steer_angle)
+
+    # center lane pub  
+    center_lane.data = (target)
+    center_lane_publisher.publish(center_lane)
+
 
     cv2.circle(frame, (int(target), int(480 - 135)), 1, (120, 0, 255), 10)
 
@@ -156,7 +172,7 @@ def video_read(fname):
 
     path = '../video/'
     filePath = os.path.join(path, fname)
-    print(filePath)
+    # print(filePath)
 
     if os.path.isfile(filePath):	# 해당 파일이 있는지 확인
         # 영상 객체(파일) 가져오기
@@ -169,7 +185,7 @@ def video_read(fname):
     frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))	# 영상의 높이(세로) 프레임
     
     frame_size = (frameWidth, frameHeight)
-    print('frame_size={}'.format(frame_size))
+    # print('frame_size={}'.format(frame_size))
 
     frameRate = 11 #33
 
@@ -252,7 +268,7 @@ def find_lane(origin, img):
     for i in range(frameWidth):
         lane_pixel_inspect_skip = 20
         #print(i)
-        print(lane_find_count)
+        # print(lane_find_count)
         if img[first_inspect_line_y_roi][i] == 255:
             if i < first_lane_x + lane_pixel_inspect_skip:
                 continue
@@ -260,7 +276,7 @@ def find_lane(origin, img):
 
             if lane_pixel_count == 15:
 
-                print(f"lane_pixel_count: {lane_pixel_count}, lane_find_count: {lane_find_count}")
+                # print(f"lane_pixel_count: {lane_pixel_count}, lane_find_count: {lane_find_count}")
                 #print(lane_find_count)
                 #cv2.waitKey(0)
                 if lane_find_count == 0:
@@ -341,12 +357,15 @@ def image_callback(msg):
 def start():
     global ack_publisher
     global steer_angle_publisher
+    global center_lane_publisher
     rospy.init_node("image_listener")
     image_topic = "/camera/image/compressed"
 
     rospy.Subscriber(image_topic, CompressedImage, image_callback)
     #ack_publisher = rospy.Publisher('xycar_motor', xycar_motor, queue_size=1)
-    steer_angle_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+    # steer_angle_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+    # target lane pub 
+    center_lane_publisher = rospy.Publisher('/detect/lane', Float64, queue_size=1)
     rospy.spin()
 
 

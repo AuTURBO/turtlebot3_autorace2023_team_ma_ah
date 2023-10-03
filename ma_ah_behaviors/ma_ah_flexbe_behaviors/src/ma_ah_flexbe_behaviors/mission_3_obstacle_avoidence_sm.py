@@ -8,9 +8,8 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from flexbe_states.log_state import LogState
-from flexbe_states.wait_state import WaitState
-from ma_ah_flexbe_behaviors.ma_ah_test_sm import maahtestSM
+from ma_ah_flexbe_states.lane_control_2 import ControlLaneStateTo
+from ma_ah_flexbe_states.move_base import MoveBaseState as ma_ah_flexbe_states__MoveBaseState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -18,24 +17,22 @@ from ma_ah_flexbe_behaviors.ma_ah_test_sm import maahtestSM
 
 
 '''
-Created on Wed Sep 13 2023
-@author: ggh
+Created on Mon Oct 02 2023
+@author: ggh-png
 '''
-class helloworldSM(Behavior):
+class mission3obstacleavoidenceSM(Behavior):
 	'''
-	hello world demo
+	mission 3 obstacle avoidence
 	'''
 
 
 	def __init__(self):
-		super(helloworldSM, self).__init__()
-		self.name = 'hello world'
+		super(mission3obstacleavoidenceSM, self).__init__()
+		self.name = 'mission 3 obstacle avoidence'
 
 		# parameters of this behavior
-		self.add_parameter('waiting_time', 1)
 
 		# references to used behaviors
-		self.add_behavior(maahtestSM, 'ma ah test')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -47,9 +44,10 @@ class helloworldSM(Behavior):
 
 
 	def create(self):
-		hello = "hello world!!!"
+		obstacle_waypoint = [1.4, 1.7, 3.14]
 		# x:30 y:365, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		_state_machine.userdata.waypoint = obstacle_waypoint
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -58,23 +56,18 @@ class helloworldSM(Behavior):
 
 
 		with _state_machine:
-			# x:30 y:40
-			OperatableStateMachine.add('init_wait',
-										WaitState(wait_time=self.waiting_time),
-										transitions={'done': 'print_log'},
-										autonomy={'done': Autonomy.Off})
+			# x:238 y:104
+			OperatableStateMachine.add('obstacle_line_control',
+										ControlLaneStateTo(),
+										transitions={'lane_control': 'obstacle_line_control', 'mission_control': 'obstacle_avoidence'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off})
 
-			# x:146 y:251
-			OperatableStateMachine.add('ma ah test',
-										self.use_behavior(maahtestSM, 'ma ah test'),
-										transitions={'finished': 'finished', 'failed': 'finished'},
-										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
-
-			# x:279 y:142
-			OperatableStateMachine.add('print_log',
-										LogState(text=hello, severity=Logger.REPORT_HINT),
-										transitions={'done': 'ma ah test'},
-										autonomy={'done': Autonomy.High})
+			# x:578 y:214
+			OperatableStateMachine.add('obstacle_avoidence',
+										ma_ah_flexbe_states__MoveBaseState(),
+										transitions={'arrived': 'finished', 'failed': 'failed'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'waypoint': 'waypoint'})
 
 
 		return _state_machine

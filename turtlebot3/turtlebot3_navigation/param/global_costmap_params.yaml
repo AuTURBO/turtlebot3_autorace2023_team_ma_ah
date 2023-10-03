@@ -1,10 +1,9 @@
 global_costmap:
-  global_frame: map
-  robot_base_frame: base_footprint
+  global_frame: map  # 코스트맵의 글로벌 프레임 (장애물 위치가 표현될 프레임)
+  robot_base_frame: base_footprint  # 로봇 베이스 프레임 (로봇의 중심 프레임)
 
-  update_frequency: 10.0
-  publish_frequency: 10.0
-  transform_tolerance: 0.5
+  update_frequency: 10.0  # 코스트맵 업데이트 주파수 (Hz)
+  publish_frequency: 10.0  # 코스트맵 발행 주파수 (Hz)
+  transform_tolerance: 0.5  # 변환 허용 시간 (로봇 프레임과 코스트맵 프레임 사이의 변환 허용 시간)
 
-  static_map: true
- 
+  static_map: true  # 정적 맵 사용 여부 (보통 정적 맵을 사용)

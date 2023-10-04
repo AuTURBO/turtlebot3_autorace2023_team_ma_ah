@@ -1,17 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from std_msgs.msg import Float64
+################################################################################
+# Copyright 2018 ROBOTIS CO., LTD.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
 
-from geometry_msgs.msg import Twist
-from flexbe_core import EventState, Logger
-from flexbe_core.proxy import ProxySubscriberCached
-from flexbe_core.proxy import ProxyPublisher
-
-from std_msgs.msg import String
-
+# Author: Leon Jung, Gilbert, Ashe Kim
+ 
 import rospy
+import numpy as np
 import math
 import tf
 from enum import Enum
@@ -21,20 +30,14 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from turtlebot3_autorace_msgs.msg import MovingParam
 
-
-
-class ControlModeState(EventState):
-    '''
-    Implements a FlexBE state that controls the lane of a robot.
-    '''
+class ControlMoving():
     def __init__(self):
-        super(ControlModeState, self).__init__(outcomes=['proceed', 'done'])
-        self.sub_moving_state = ProxySubscriberCached({"/control/moving/state", MovingParam})
-        self.sub_odom = ProxySubscriberCached("/odom", Odometry)
+        self.sub_moving_state = rospy.Subscriber('/control/moving/state', MovingParam, self.get_param, queue_size = 1)
+        self.sub_odom = rospy.Subscriber('/odom', Odometry, self.cbOdom, queue_size=1)
 
-        self.pub_cmd_vel = ProxyPublisher({"/cmd_vel", Twist})
-        self.pub_max_vel = ProxyPublisher({"/control/max_vel", Float64})
-        self.pub_moving_complete = ProxyPublisher({"/control/moving/complete", UInt8})
+        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size = 1)
+        self.pub_max_vel = rospy.Publisher('/control/max_vel', Float64, queue_size = 1)
+        self.pub_moving_complete = rospy.Publisher('/control/moving/complete', UInt8, queue_size = 1)
 
         #moving type enum
         self.TypeOfMoving = Enum('TypeOfMoving', 'idle left right forward backward')
@@ -46,14 +49,14 @@ class ControlModeState(EventState):
         #moving params
         self.moving_type = UInt8()
         self.moving_angluar = 0.0
-        self.moving_linear = 1.0
+        self.moving_linear = 0.0
         self.moving_msg = MovingParam()
 
         #moving flags
         self.is_step_start = False
         self.is_step_left = False
         self.is_step_right = False
-        self.is_step_forward = True
+        self.is_step_forward = False
         self.is_step_backward = False
 
         #moving internal valiables
@@ -84,55 +87,22 @@ class ControlModeState(EventState):
         rospy.on_shutdown(self.fnShutDown)
 
 
-
-
-    def on_enter(self, userdata):
-        Logger.loginfo("Starting lane control...")
-
-            
-
-    def execute(self, userdata):
-        pass
-
-
-    def on_exit(self, userdata):
-        # 이 메서드는 결과가 반환되고 다른 상태가 활성화될 때 호출됩니다.
-        # on_enter에서 시작된 실행 중인 프로세스를 중지하는 데 사용할 수 있습니다.
-
-        pass # 이 예시에서는 할 일이 없습니다.
-
-
-    def on_start(self):
-        # 이 메서드는 행동이 시작될 때 호출됩니다.
-        # 가능하면, 일반적으로 사용된 리소스를 생성자에서 초기화하는 것이 더 좋습니다
-        # 왜냐하면 무언가 실패하면 행동은 시작조차 되지 않을 것이기 때문입니다.
-
-        # 이 예시에서는 이 이벤트를 사용하여 올바른 시작 시간을 설정합니다.
-        pass
-
-    def on_stop(self):
-        # 이 메서드는 행동이 실행을 중지할 때마다 호출됩니다, 취소된 경우에도 마찬가지입니다.
-        # 이 이벤트를 사용하여 요청된 리소스와 같은 것들을 정리하세요.
-
-        pass # 이 예시에서는 할 일이 없습니다.
-
-
     def get_param(self, msg):
         self.moving_type = msg.moving_type
         self.moving_angluar = msg.moving_value_angular
         self.moving_linear = msg.moving_value_linear
-        Logger.loginfo("get : moving_type : %d",self.moving_type)
-        Logger.loginfo("get : moving_angluar : %f",self.moving_angluar)
-        Logger.loginfo("get : moving_linear : %f", self.moving_linear)
+        rospy.loginfo("get : moving_type : %d",self.moving_type)
+        rospy.loginfo("get : moving_angluar : %f",self.moving_angluar)
+        rospy.loginfo("get : moving_linear : %f", self.moving_linear)
 
         if self.is_step_left == True:
-            Logger.loginfo("now left step stil working")
+            rospy.loginfo("now left step stil working")
         elif self.is_step_right == True:
-            Logger.loginfo("now right step stil working")
+            rospy.loginfo("now right step stil working")
         elif self.is_step_forward == True:
-            Logger.loginfo("now forward step stil working")
+            rospy.loginfo("now forward step stil working")
         elif self.is_step_backward == True:
-            Logger.loginfo("now backward step stil working")
+            rospy.loginfo("now backward step stil working")
 
         if self.is_step_start == False:
             if msg.moving_type == self.TypeOfMoving.left.value:
@@ -147,9 +117,7 @@ class ControlModeState(EventState):
             elif msg.moving_type == self.TypeOfMoving.backward.value:
                 self.moving_msg = msg
                 self.is_step_backward = True
-
-
-
+        
 
     def init_state(self):
         self.is_step_start = False
@@ -181,7 +149,7 @@ class ControlModeState(EventState):
 
 
     def turn_left(self, msg):
-        Logger.loginfo("turn_left function is called")
+        rospy.loginfo("turn_left function is called")
         if self.is_step_start == False:
             self.lastError = 0.0
             self.desired_theta = self.current_theta + math.radians(msg.moving_value_angular)
@@ -190,11 +158,11 @@ class ControlModeState(EventState):
         error = self.fnTurn()
 
         if math.fabs(error) < 0.05:
-            Logger.loginfo("turn_left function is finished")
+            rospy.loginfo("turn_left function is finished")
             self.step_completed()
 
     def turn_right(self, msg):
-        Logger.loginfo("turn_right function is called")
+        rospy.loginfo("turn_right function is called")
         if self.is_step_start == False:
             self.lastError = 0.0
             self.desired_theta = self.current_theta - math.radians(msg.moving_value_angular)
@@ -203,12 +171,12 @@ class ControlModeState(EventState):
         error = self.fnTurn()
 
         if math.fabs(error) < 0.05:
-            Logger.loginfo("turn_right function is finished")
+            rospy.loginfo("turn_right function is finished")
             self.step_completed()
 
 
     def go_forward(self, msg):
-        Logger.loginfo("go_forawrd function is called")
+        rospy.loginfo("go_forawrd function is called")
         if self.is_step_start == False:
             self.lastErorr = 0.0
             self.start_pos_x = self.current_pos_x
@@ -218,12 +186,12 @@ class ControlModeState(EventState):
         error = self.fnStraight(msg.moving_value_linear)
 
         if math.fabs(error) < 0.005:
-            Logger.loginfo("go_forward function is finished")
+            rospy.loginfo("go_forward function is finished")
             self.step_completed()
 
 
     def go_backward(self, msg):
-        Logger.loginfo("go_backward function is called")
+        rospy.loginfo("go_backward function is called")
         if self.is_step_start == False:
             self.lastError = 0.0
             self.start_pos_x = self.current_pos_x
@@ -233,14 +201,14 @@ class ControlModeState(EventState):
         error = self.fnBackStraight(msg.moving_value_linear)
 
         if math.fabs(error) < 0.005:
-            Logger.loginfo("go_backward function is finished")
+            rospy.loginfo("go_backward function is finished")
             self.step_completed()
 
 
     def fnTurn(self):
         err_theta = self.current_theta - self.desired_theta
         
-        # Logger.loginfo("err_theta  desired_theta  current_theta : %f  %f  %f", err_theta, self.desired_theta, self.current_theta)
+        # rospy.loginfo("err_theta  desired_theta  current_theta : %f  %f  %f", err_theta, self.desired_theta, self.current_theta)
         Kp = 0.45
         Kd = 0.03
 
@@ -256,7 +224,7 @@ class ControlModeState(EventState):
         twist.angular.z = -(angular_z * 2)
         self.pub_cmd_vel.publish(twist)
 
-        # Logger.loginfo("angular_z : %f", angular_z)
+        # rospy.loginfo("angular_z : %f", angular_z)
 
         return err_theta
 
@@ -264,7 +232,7 @@ class ControlModeState(EventState):
 
         err_pos = math.sqrt((self.current_pos_x - self.start_pos_x) ** 2 + (self.current_pos_y - self.start_pos_y) ** 2) - desired_dist
     
-        # Logger.loginfo("error_pos2 = %f", err_pos)
+        # rospy.loginfo("error_pos2 = %f", err_pos)
         Kp = 0.04
         Kd = 0.05
 
@@ -292,7 +260,7 @@ class ControlModeState(EventState):
 
         err_pos = math.sqrt((self.current_pos_x - self.start_pos_x) ** 2 + (self.current_pos_y - self.start_pos_y) ** 2) - desired_dist
     
-        # Logger.loginfo("error_pos = %f", err_pos)
+        # rospy.loginfo("error_pos = %f", err_pos)
         Kp = 0.04
         Kd = 0.05
 
@@ -347,7 +315,7 @@ class ControlModeState(EventState):
         return theta
 
     def fnShutDown(self):
-        Logger.loginfo("Shutting down. cmd_vel will be 0")
+        rospy.loginfo("Shutting down. cmd_vel will be 0")
 
         twist = Twist()
         twist.linear.x = 0
@@ -358,5 +326,10 @@ class ControlModeState(EventState):
         twist.angular.z = 0
         self.pub_cmd_vel.publish(twist) 
 
+    def main(self):
+        rospy.spin()
 
-
+if __name__ == '__main__':
+    rospy.init_node('control_moving')
+    node = ControlMoving()
+    node.main()

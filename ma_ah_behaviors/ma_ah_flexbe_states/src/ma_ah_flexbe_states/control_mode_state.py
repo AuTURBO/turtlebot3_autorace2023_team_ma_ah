@@ -92,8 +92,11 @@ class ControlModeState(EventState):
             
 
     def execute(self, userdata):
-        pass
-
+            self.lastErorr = 0.0
+            self.start_pos_x = self.current_pos_x
+            self.start_pos_y = self.current_pos_y
+            # self.is_step_start = True
+            return 'proceed'
 
     def on_exit(self, userdata):
         # 이 메서드는 결과가 반환되고 다른 상태가 활성화될 때 호출됩니다.

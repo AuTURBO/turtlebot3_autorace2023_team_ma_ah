@@ -163,7 +163,7 @@ catkin_package(
 # in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/camera_driver.py
-  scripts/line_detector.py
+  scripts/lane_detector.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

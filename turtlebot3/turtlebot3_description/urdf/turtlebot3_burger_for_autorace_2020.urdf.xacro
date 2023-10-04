@@ -134,12 +134,12 @@
   <joint name="scan_joint" type="fixed">
     <parent link="base_link"/>
     <child link="base_scan"/>
-    <origin xyz="-0.032 0 0.172" rpy="0 0 0"/>
+    <origin xyz="-0.032 0 0.172" rpy="0 0 3.14"/>
   </joint>
 
   <link name="base_scan">
     <visual>
-      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <origin xyz="0 0 0.0" rpy="0 0 3.14"/>
       <geometry>
         <mesh filename="package://turtlebot3_description/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/>
       </geometry>
@@ -147,7 +147,7 @@
     </visual>
 
     <collision>
-      <origin xyz="0.015 0 -0.0065" rpy="0 0 0"/>
+      <origin xyz="0.015 0 -0.0065" rpy="0 0 3.14"/>
       <geometry>
         <cylinder length="0.0315" radius="0.055"/>
       </geometry>

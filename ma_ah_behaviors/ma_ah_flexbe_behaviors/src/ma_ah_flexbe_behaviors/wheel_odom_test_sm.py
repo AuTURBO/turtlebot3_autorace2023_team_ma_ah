@@ -56,8 +56,8 @@ class wheelodomtestSM(Behavior):
 			# x:182 y:93
 			OperatableStateMachine.add('ControlModeState',
 										ControlModeState(),
-										transitions={'proceed': 'ControlModeState', 'done': 'ControlModeState'},
-										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
+										transitions={'lane_control': 'ControlModeState', 'mission_control': 'ControlModeState'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off})
 
 
 		return _state_machine

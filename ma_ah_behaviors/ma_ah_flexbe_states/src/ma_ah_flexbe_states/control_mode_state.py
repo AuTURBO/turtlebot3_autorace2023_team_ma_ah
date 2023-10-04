@@ -27,16 +27,16 @@ class ControlModeState(EventState):
     '''
 
     def __init__(self):
-        super(ControlModeState, self).__init__(outcomes=['proceed', 'done'])
+        super(ControlModeState, self).__init__(outcomes=['lane_control', 'mission_control'])
 
         # subscribes state
-        self.sub_moving_state = ProxySubscriberCached('/control/moving/state', Float64)
-        self.sub_odom = ProxySubscriberCached('/odom', Odometry)
+        # self.sub_moving_state = ProxySubscriberCached('/control/moving/state', Float64)
+        # self.sub_odom = ProxySubscriberCached('/odom', Odometry)
         
-        # publishers state
-        self.pub_cmd_vel = ProxyPublisher('/cmd_vel', Twist)
-        self.pub_max_vel = ProxyPublisher('/control/max_vel', Float64)
-        self.pub_moving_complete = ProxyPublisher('/control/moving/complete', UInt8)
+        # # publishers state
+        # self.pub_cmd_vel = ProxyPublisher('/cmd_vel', Twist)
+        # self.pub_max_vel = ProxyPublisher('/control/max_vel', Float64)
+        # self.pub_moving_complete = ProxyPublisher('/control/moving/complete', UInt8)
 
 
 

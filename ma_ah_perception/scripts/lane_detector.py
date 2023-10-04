@@ -33,7 +33,8 @@ class Lane_detector:
         self.red = (0, 0, 255)
 
         self.img_subscriber = rospy.Subscriber(image_topic, CompressedImage, self.img_cb)
-        self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
+        # self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
+        self.cener_line_publisher = rospy.Publisher("/detect/lane", Float64, queue_size=10)
     
     def img_cb(self, img_msg):
         try:
@@ -111,7 +112,11 @@ class Lane_detector:
         cmd_vel_msg.linear.x = 0.1
         cmd_vel_msg.angular.z = angle
 
-        self.cmd_vel_publisher.publish(cmd_vel_msg)
+        # self.cmd_vel_publisher.publish(cmd_vel_msg)
+
+        center_line_msg = Float64()
+        center_line_msg.data = target
+        self.cener_line_publisher.publish(center_line_msg)
 
         cv2.circle(frame, (int(target), int(480 - 135)), 1, (120, 0, 255), 10)
 
@@ -164,7 +169,8 @@ if __name__ == '__main__':
     
     image_topic = "/camera/image/compressed"
     cmd_vel_topic = "cmd_vel"
+    center_line_topic = "/detect/lane"
 
-    lane_detector = Lane_detector(image_topic, cmd_vel_topic)
-
+    # lane_detector = Lane_detector(image_topic, cmd_vel_topic)
+    lane_detector = Lane_detector(image_topic, center_line_topic)
     rospy.spin()

@@ -5,10 +5,10 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CompressedImage
 
-path = './cali_usb_cam/'
+path = './yolo_data_1001_rosbag/'
 img_name = 'img'
 
-current_directory = os.getcwd() + '/cali_usb_cam'
+current_directory = os.getcwd() + '/yolo_data_1001_rosbag'
 
 
 

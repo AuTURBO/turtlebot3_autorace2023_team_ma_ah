@@ -104,9 +104,10 @@ roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map
 
 ## flexbe
 
-### lane detecting
+### lane_detector 
 
 ```bash
+rosrun ma_ah_perception lane_detector.py
 ```
 
 ### yolov7_TensorRT (Jetson Xavier)

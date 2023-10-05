@@ -55,3 +55,26 @@ class StopBarState(EventState):
 
     # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.
 
+
+    # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.
+
+    def on_exit(self, userdata):
+        # 이 메서드는 결과가 반환되고 다른 상태가 활성화될 때 호출됩니다.
+        # on_enter에서 시작된 실행 중인 프로세스를 중지하는 데 사용할 수 있습니다.
+
+        pass # 이 예시에서는 할 일이 없습니다.
+
+
+    def on_start(self):
+        # 이 메서드는 행동이 시작될 때 호출됩니다.
+        # 가능하면, 일반적으로 사용된 리소스를 생성자에서 초기화하는 것이 더 좋습니다
+        # 왜냐하면 무언가 실패하면 행동은 시작조차 되지 않을 것이기 때문입니다.
+
+        # 이 예시에서는 이 이벤트를 사용하여 올바른 시작 시간을 설정합니다.
+        pass
+
+    def on_stop(self):
+        # 이 메서드는 행동이 실행을 중지할 때마다 호출됩니다, 취소된 경우에도 마찬가지입니다.
+        # 이 이벤트를 사용하여 요청된 리소스와 같은 것들을 정리하세요.
+
+        pass # 이 예시에서는 할 일이 없습니다.

@@ -8,7 +8,6 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from ma_ah_flexbe_states.lane_control_2 import ControlLaneStateTo
 from ma_ah_flexbe_states.move_base import MoveBaseState as ma_ah_flexbe_states__MoveBaseState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
@@ -56,14 +55,8 @@ class mission3obstacleavoidenceSM(Behavior):
 
 
 		with _state_machine:
-			# x:238 y:104
-			OperatableStateMachine.add('obstacle_line_control',
-										ControlLaneStateTo(),
-										transitions={'lane_control': 'obstacle_line_control', 'mission_control': 'obstacle_avoidence'},
-										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off})
-
-			# x:578 y:214
-			OperatableStateMachine.add('obstacle_avoidence',
+			# x:319 y:106
+			OperatableStateMachine.add('move_base',
 										ma_ah_flexbe_states__MoveBaseState(),
 										transitions={'arrived': 'finished', 'failed': 'failed'},
 										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},

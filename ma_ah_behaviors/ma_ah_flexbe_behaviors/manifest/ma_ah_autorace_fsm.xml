@@ -15,6 +15,9 @@
 	<contains name="mission 1 traffic light" />
 	<contains name="mission 2 cross line " />
 	<contains name="mission 3 obstacle avoidence" />
+	<contains name="mission 4 parking" />
+	<contains name="mission 5 stop bar" />
+	<contains name="mission 6 tunnel" />
 
 	<!-- Available Parameters -->
 

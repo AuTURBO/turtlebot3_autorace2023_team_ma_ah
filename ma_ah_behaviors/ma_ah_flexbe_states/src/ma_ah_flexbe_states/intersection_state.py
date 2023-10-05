@@ -23,7 +23,7 @@ class IntersectionState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(IntersectionState, self).__init__(outcomes=['turn_left', 'turn_right'])
+        super(IntersectionState, self).__init__(outcomes=['turn_left', 'turn_right', 'proceed'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/crossroad_sign": String})
@@ -46,19 +46,12 @@ class IntersectionState(EventState):
             elif crossroad_info == "right":
                 self._crossroad_sign = "right"
                 return 'turn_right'
-        # else:
-        #     Logger.loginfo("Finished intersection Mode")
-        #     self._crossroad_sign = None
-        #     return 'done'
-
+        else:
+            Logger.loginfo("No crossroad sign available.")
+            return 'proceed'
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.
         # It is typically used to start actions related to this state.
-        twist = Twist()
-        twist.linear.x = 0.0
-        twist.angular.z = 0.0
-        self._pub.publish("/cmd_vel", twist)
-        Logger.loginfo('Entered state Intersection Mode')
-
+        pass
     # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.
 

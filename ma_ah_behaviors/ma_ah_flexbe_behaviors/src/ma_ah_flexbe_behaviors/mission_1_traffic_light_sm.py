@@ -8,8 +8,8 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from ma_ah_flexbe_states.lane_control_2 import ControlLaneStateTo
-from ma_ah_flexbe_states.traffic_light import TrafficLightState
+from ma_ah_flexbe_states.lane_control import ControlLaneState
+from ma_ah_flexbe_states.traffic_sign_size_state import TrafficLightState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -44,8 +44,14 @@ class mission1trafficlightSM(Behavior):
 
 
 	def create(self):
+		middle = "middle"
+		left = "left"
+		right = "right"
 		# x:30 y:365, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		_state_machine.userdata.middle = middle
+		_state_machine.userdata.left = left
+		_state_machine.userdata.right = right
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -54,17 +60,18 @@ class mission1trafficlightSM(Behavior):
 
 
 		with _state_machine:
-			# x:189 y:76
-			OperatableStateMachine.add('traffic_lane_control',
-										ControlLaneStateTo(),
-										transitions={'lane_control': 'traffic_lane_control', 'mission_control': 'traffic_light'},
-										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off})
-
-			# x:430 y:139
-			OperatableStateMachine.add('traffic_light',
+			# x:125 y:60
+			OperatableStateMachine.add('traffic_light_state',
 										TrafficLightState(),
-										transitions={'green_light': 'finished', 'red_or_yellow_light': 'traffic_light', 'no_signal': 'traffic_light'},
-										autonomy={'green_light': Autonomy.Off, 'red_or_yellow_light': Autonomy.Off, 'no_signal': Autonomy.Off})
+										transitions={'proceed': 'traffic_light_state', 'done': 'control_lane'},
+										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
+
+			# x:292 y:183
+			OperatableStateMachine.add('control_lane',
+										ControlLaneState(),
+										transitions={'lane_control': 'control_lane', 'mission_control': 'finished'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'right'})
 
 
 		return _state_machine

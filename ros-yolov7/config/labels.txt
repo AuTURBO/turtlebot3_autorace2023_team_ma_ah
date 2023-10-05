@@ -1,7 +1,10 @@
+boom_barrier
 intersection
 left
+no_entry
 obstacle
 parking
 right
-tune
+stop
+traffic_light
 tunnel

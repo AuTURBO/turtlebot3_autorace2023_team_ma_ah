@@ -52,7 +52,7 @@ class YoloV7:
         self.model      = attempt_load(self.configs['weights_path'], self.configs['device'])
         self.model.eval()
 
-        image_transport.Subscriber(self.configs['img_topic'], self._image_callback, image_type='rgb8')
+        image_transport.Subscriber(self.configs['img_topic'], self._image_callback, image_type='bgr8')
 
         self.pub_detection2D = rospy.Publisher(
             name       = f"{rospy.get_name()}/detection",
@@ -179,6 +179,8 @@ class YoloV7:
             classes = [int(c) for c in detections[:, 5].tolist()]
             vis_img = draw_detections(np_img_orig, bboxes, classes,
                                       self.class_labels)
+            
+            vis_img = cv2.cvtColor(vis_img, cv2.COLOR_BGR2RGB)
             self.pub_visualize.publish(vis_img)
 
         self.img_buffer = None

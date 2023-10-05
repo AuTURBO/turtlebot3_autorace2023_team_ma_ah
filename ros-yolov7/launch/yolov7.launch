@@ -6,11 +6,11 @@
         <!-- Path to a class_labels.txt file, if you leave it empty then no class labels are visualized.-->
         <param name="classes_path" type="str" value="/root/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/ros-yolov7/config/labels.txt" />
         <!-- Input image topic name to subscribe to -->
-        <param name="img_topic" type="str" value="/camera/image" />
+        <param name="img_topic" type="str" value="/camera/image" />  <!--/camera/image/compressed --> 
         <!-- [optional]  Confidence threshold (default=0.25) -->
-        <param name="conf_thresh" type="double" value="0.20" />
+        <param name="conf_thresh" type="double" value="0.70" />
         <!-- [optional]  Intersection over union threshold (default=0.45) -->
-        <param name="iou_thresh" type="double" value="0.45" />
+        <param name="iou_thresh" type="double" value="0.55" />
         <!-- [optional]  Queue size for publishing (default=3) -->
         <param name="queue_size" type="int" value="1" />
         <!-- [optional] Image size to which to resize each input image before feeding into the network (the final output is rescaled to the original image size) (default=640) -->

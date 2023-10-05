@@ -164,6 +164,8 @@ catkin_package(
 catkin_install_python(PROGRAMS
   scripts/camera_driver.py
   scripts/lane_detector.py
+  scripts/img_converter.py
+  scripts/yolo_filter.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -120,3 +120,14 @@ rosrun ma_ah_perception lane_detector.py
 ```
 roslaunch yolov7 yolov7.launch
 ```
+
+
+
+### Ultrasonic
+```
+pip install Jetson.GPIO
+```
+```
+rosrun ultrasonic ROS_sonar_sensor.py
+```
+

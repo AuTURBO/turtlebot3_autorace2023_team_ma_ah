@@ -96,7 +96,7 @@ class AvoidNode:
         if (self.is_obstacle_detected):
             print("obstacle!!!!")
 
-    def lane_detector(self, frame, direction):
+    def lane_detector(self, frame):
         prev_target = 320
         frameRate = 11 #33
         frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
@@ -133,12 +133,6 @@ class AvoidNode:
         filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = self.pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
         self.pre_module.drawing_lane(msk, filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry)
 
-        if direction == "left":
-            filtered_rx = None
-            filtered_mx = None
-        elif direction == "right":
-            filtered_lx = None
-            filtered_mx = None
         target = self.simple_controller(filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry)
 
         #target = LowPassFilter(0.9, prev_target, target)
@@ -221,7 +215,7 @@ class AvoidNode:
         while not rospy.is_shutdown():
             current_angle = self.current_theta
             print(current_angle, start_angle)
-            if abs(current_angle - start_angle) < math.pi/2 - 0.2:
+            if abs(current_angle - start_angle) < math.pi/2:
                 self.drive(0.0, theta)
             else:
                 self.drive(0.0, 0.0)
@@ -238,47 +232,62 @@ class AvoidNode:
                 self.drive(0.0, 0.0)
                 break
 
+    def rotate_90_degrees(self, t, theta):
+        for i in range(t):
+            self.drive(0.0, theta)
+            time.sleep(0.1)
+        self.drive(0.0, 0.0)
+
+    def move_forward(self, t):
+        for i in range(t):
+            self.drive(0.2, 0.0)
+            time.sleep(0.1)
+        self.drive(0.0, 0.0)
+
     def drive(self, linear_x, angular_z):
         self.steer_angle.linear.x = linear_x
         self.steer_angle.angular.z = angular_z
 
         self.pub_cmd_vel.publish(self.steer_angle)
 
-    def avoid(self, direction):
+    def avoid(self):
         print("AVOID !!!!!")
 
         self.drive(0.0, 0.0)
 
-        if direction == "left":
-            self.rotate_90_degrees_odom(self.current_theta, -0.5)
-            self.move_forward_odom(0.2, self.current_pos)
-            self.rotate_90_degrees_odom(self.current_theta, 0.5)
-            self.direction = "exit"
+        self.rotate_90_degrees(37, 0.5)
+        self.move_forward(15)
+        self.rotate_90_degrees(37, -0.5)
+        self.move_forward(20)
+        self.rotate_90_degrees(37, -0.5)
+        self.move_forward(15)
+        self.rotate_90_degrees(37, 0.5)
 
-        if direction == "right":
-            self.rotate_90_degrees_odom(self.current_theta, 0.5)
-            self.move_forward_odom(0.2, self.current_pos)
-            self.rotate_90_degrees_odom(self.current_theta, -0.5)
-            self.direction = "left"
+        #self.rotate_90_degrees(self.current_theta, 0.5)
+        #self.move_forward(0.21, self.current_pos)
+        #self.rotate_90_degrees(self.current_theta, -0.5)
+        #self.move_forward(0.19, self.current_pos)
+        #self.rotate_90_degrees(self.current_theta, -0.5)
+        #self.move_forward(0.18, self.current_pos)
+        #self.rotate_90_degrees(self.current_theta, 0.5)
 
 
     def main(self):
         rate = rospy.Rate(30)
         rospy.wait_for_message("/camera/image/compressed", CompressedImage, timeout=10)
         self.current_mode = Mode.LANE
-        self.direction = "right"
+        #self.direction = "left"
         while not rospy.is_shutdown():
 
             if self.current_mode == Mode.LANE:
                 if self.cv_image is not None:
-                    self.lane_detector(self.cv_image, self.direction)
+                    self.lane_detector(self.cv_image)
 
                 if self.is_obstacle_detected:
                     self.current_mode = Mode.AVOID
 
             if self.current_mode == Mode.AVOID:
-                self.avoid(self.direction)
-                self.is_obstacle_detected = False
+                self.avoid()
                 self.current_mode = Mode.LANE
 
             rate.sleep()

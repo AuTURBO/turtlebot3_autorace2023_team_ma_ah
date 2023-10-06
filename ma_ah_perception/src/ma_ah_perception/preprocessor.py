@@ -172,7 +172,7 @@ class PreProcessor:
         right_base = right_hist_result
         left_base = left_hist_result
         mid_base = mid_hist_result
-        print(left_base, right_base)
+        #print(left_base, right_base)
         return left_base, mid_base, right_base
 
     # =============================================
@@ -422,7 +422,7 @@ class PreProcessor:
             filtered_lx.append(cx)
 
         if len(lx) < threshold_mid_lane_select:
-            print("Left Lane Error")
+            #print("Left Lane Error")
             filtered_lx = None
             filtered_ly = None
 

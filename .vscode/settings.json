@@ -1,3 +1,11 @@
 {
-    "cmake.sourceDirectory": "/home/ggh/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/DynamixelSDK/ros/dynamixel_sdk"
+    "cmake.sourceDirectory": "/home/ggh/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/DynamixelSDK/ros/dynamixel_sdk",
+    "python.autoComplete.extraPaths": [
+        "/home/shlee/turtle_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/shlee/turtle_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
 }

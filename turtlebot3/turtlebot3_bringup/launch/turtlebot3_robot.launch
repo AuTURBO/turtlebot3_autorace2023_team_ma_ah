@@ -17,6 +17,10 @@
 
   <node pkg="turtlebot3_bringup" type="turtlebot3_diagnostics" name="turtlebot3_diagnostics" output="screen"/>
 
+  <!-- Start USB Camera Driver  -->
+  <node pkg="ma_ah_perception" type="camera_driver.py" name="usb_camera_driver" output="screen">
+  </node>
+
   <group if = "$(eval model == 'waffle_pi')">
     <include file="$(find turtlebot3_bringup)/launch/turtlebot3_rpicamera.launch"/>
   </group>

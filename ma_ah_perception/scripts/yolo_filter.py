@@ -17,7 +17,7 @@ class Yolo_filter:
         self.green = (0, 255, 0)
         self.red = (0, 0, 255)
         
-        self.bbox_size_threshold = 10000
+        self.bbox_size_threshold = 3500
         self.detection_buffer = deque()
         self.detection_buffer_len = 10
         self.count_threshold = 5

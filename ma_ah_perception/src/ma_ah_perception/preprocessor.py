@@ -99,7 +99,7 @@ class PreProcessor:
 
         roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
 
-        cv2.imshow("roi", roi)
+        #cv2.imshow("roi", roi)
 
         warped_img = cv2.warpPerspective(
             roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR
@@ -180,10 +180,10 @@ class PreProcessor:
         
         if lane_type == "left":
             left_base = self.hist_line_peak(img)  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
-            print(f"left_base :{left_base}")
+            #print(f"left_base :{left_base}")
         elif lane_type == "right":
             right_base = self.hist_line_peak(img)
-            print(f"right_base :{right_base}")
+            #print(f"right_base :{right_base}")
 
         # Sliding Window
         y = 470  # 탐색 시작 Y좌표 결정

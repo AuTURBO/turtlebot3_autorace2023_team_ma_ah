@@ -28,10 +28,9 @@ class ControlLaneState(EventState):
         self.sub_left_lane = ProxySubscriberCached({"/detect/left/lane": Float64})
         self.sub_right_lane = ProxySubscriberCached({"/detect/right/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
-        self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
-        self.sub_traffic_sign_size = ProxySubscriberCached({"/traffic_sign_size": Float64})
 
         self.sub_direction_sign = ProxySubscriberCached({"/direction_sign": String})
+        self._filtered_detection_sub = ProxySubscriberCached({"/filtered/detection": String})
 
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
 
@@ -93,27 +92,29 @@ class ControlLaneState(EventState):
         result = None
         side_margin = 240
 
-        if direction_sign_data == "left":
+        if direction_sign_data == "left": # Set Mode (left lane following)
             # print("See Left Lane!!!")
             result = left_lane_data + side_margin
 
-        elif direction_sign_data == "right":
+        elif direction_sign_data == "right": # Set Mode Only (right lane following)
             # print("See Right Lane!!!")
             result = right_lane_data - side_margin
 
-        elif direction_sign_data == "left,right":
-            if left_lane_data != 1000 and right_lane_data != 1000:
+
+        # 1000 is represent None value 
+
+        elif direction_sign_data == "middle": # Set Mode only (two lane following)
+            if left_lane_data != 1000 and right_lane_data != 1000: # if exist two lane
                 print("ALL!!!")
                 result = left_lane_data + ((right_lane_data - left_lane_data) // 2)
-            elif left_lane_data != 1000 and right_lane_data == 1000:
+            elif left_lane_data != 1000 and right_lane_data == 1000: # if exist only left lane
                 print("See Left Lane!!!")
                 result = left_lane_data + side_margin
-            elif left_lane_data == 1000 and right_lane_data != 1000:
+            elif left_lane_data == 1000 and right_lane_data != 1000: # if exist only right lane
                 print("See Right Lane!!!")
                 result = right_lane_data - side_margin
-
-        elif direction_sign_data == "no":
-            result = 0
+            elif left_lane_data == 1000 and right_lane_data == 1000: # if don't exist lane
+                result = 0
 
         angle = 320 - result
         print(f"target: {result}")
@@ -126,56 +127,46 @@ class ControlLaneState(EventState):
 
             
     def execute(self, userdata):
-        if True:
-            #Logger.loginfo("Traffic sign size: {}".format(self.sub_traffic_sign_size.get_last_msg("/traffic_sign_size").data))
-            # if userdata.lane_info == 'left':
-            #     desired_center = self.sub_middle_lane.get_last_msg("/detect/left/lane").data
-            # elif userdata.lane_info == 'right':
-            #     desired_center = self.sub_left_lane.get_last_msg("/detect/right/lane").data
-            # else:
-            #     desired_center = self.sub_middle_lane.get_last_msg("/detect/middle/lane").data
-            # pid lane control
 
-            if self.sub_left_lane.has_msg("/detect/left/lane") and self.sub_right_lane.has_msg("/detect/right/lane"):
-                left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
-                right_lane_data = self.sub_right_lane.get_last_msg("/detect/right/lane").data
+        Logger.loginfo("userdata.lane_info: {}".format(userdata.lane_info))
 
-            if self.sub_direction_sign.has_msg("/direction_sign"):
-                direction_sign_data = self.sub_direction_sign.get_last_msg("/direction_sign").data
-                Logger.loginfo("direction_sign_data: {}".format(direction_sign_data))
+        # lane control logic
+        if self.sub_left_lane.has_msg("/detect/left/lane") and self.sub_right_lane.has_msg("/detect/right/lane"):
+            left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
+            right_lane_data = self.sub_right_lane.get_last_msg("/detect/right/lane").data
         
-                angle = self.simple_controller(left_lane_data, right_lane_data, direction_sign_data)
+            angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
 
-                cmd_vel_msg = Twist()
-                cmd_vel_msg.linear.x = 0.1 # 0.1
-                cmd_vel_msg.angular.z = angle
-                self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
+            cmd_vel_msg = Twist()
+            cmd_vel_msg.linear.x = 0.1 # 0.1
+            cmd_vel_msg.angular.z = angle
+            self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
+
+        # When robot detect any traffic sign
+        if self._sub.has_msg("/filtered/detection"):
+            self._traffic_sign = self._filtered_detection_sub.get_last_msg("/filtered/detection").data
+            Logger.loginfo("Traffic_sign: {}".format(self._traffic_sign))
+
+            # recursion lane control
+            if self._traffic_sign == "[]":
+                Logger.loginfo("lane control recursion")
+                return 'lane_control'
      
                 #self.pid_control(desired_center)
-            return 'lane_control'
-        else:
-            Logger.loginfo("start mission control")
-            return 'mission_control'
+            else: # move mission_control
+                Logger.loginfo("start mission control")
+                return 'mission_control'
         
 
 
     def on_exit(self, userdata):
-        # 이 메서드는 결과가 반환되고 다른 상태가 활성화될 때 호출됩니다.
-        # on_enter에서 시작된 실행 중인 프로세스를 중지하는 데 사용할 수 있습니다.
 
         pass # 이 예시에서는 할 일이 없습니다.
 
 
     def on_start(self):
-        # 이 메서드는 행동이 시작될 때 호출됩니다.
-        # 가능하면, 일반적으로 사용된 리소스를 생성자에서 초기화하는 것이 더 좋습니다
-        # 왜냐하면 무언가 실패하면 행동은 시작조차 되지 않을 것이기 때문입니다.
 
-        # 이 예시에서는 이 이벤트를 사용하여 올바른 시작 시간을 설정합니다.
         pass
 
     def on_stop(self):
-        # 이 메서드는 행동이 실행을 중지할 때마다 호출됩니다, 취소된 경우에도 마찬가지입니다.
-        # 이 이벤트를 사용하여 요청된 리소스와 같은 것들을 정리하세요.
-
         pass # 이 예시에서는 할 일이 없습니다.

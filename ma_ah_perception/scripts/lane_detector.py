@@ -106,7 +106,7 @@ class Lane_detector:
         #cv2.imshow("gblur_img", gblur_img)
 
         warped_img = pre_module.warp_perspect(gblur_img, "usb_cam")
-        cv2.imshow('warped_img', warped_img)	
+        #cv2.imshow('warped_img', warped_img)	
 
         left_lane_img, right_lane_img = self.color_filtering(warped_img)
 
@@ -127,13 +127,13 @@ class Lane_detector:
         left_lane_gray = cv2.cvtColor(left_lane_img, cv2.COLOR_BGR2GRAY)
         right_lane_gray = cv2.cvtColor(right_lane_img, cv2.COLOR_BGR2GRAY)
 
-        left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "otsu", window_name="otsu", show=True)
+        #left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "otsu", window_name="otsu", show=False)
 
         left_msk, lx, ly = pre_module.sliding_window(left_lane_gray, "left")
         right_msk, rx, ry = pre_module.sliding_window(right_lane_gray, "right")
 
-        cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
-        cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
+        #cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
+        #cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
 
         msk = cv2.add(left_msk, right_msk)
         # filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
@@ -164,7 +164,7 @@ class Lane_detector:
         cv2.circle(frame, (int(target), int(480 - 135)), 1, (120, 0, 255), 10)
 
         cv2.imshow("Lane Detection - Sliding Windows", msk)
-        cv2.imshow('frame', frame)	# 프레임 보여주기
+        #cv2.imshow('frame', frame)	# 프레임 보여주기
 
         key = cv2.waitKey(1)  # frameRate msec동안 한 프레임을 보여준다
         

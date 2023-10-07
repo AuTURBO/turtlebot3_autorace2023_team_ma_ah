@@ -8,12 +8,12 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from flexbe_navigation_states.mission_4_parking_sm import mission4parkingSM
-from flexbe_navigation_states.mission_6_tunnel_sm import mission6tunnelSM
 from ma_ah_flexbe_behaviors.mission_1_traffic_light_sm import mission1trafficlightSM
 from ma_ah_flexbe_behaviors.mission_2_cross_line__sm import mission2crosslineSM
 from ma_ah_flexbe_behaviors.mission_3_obstacle_avoidence_sm import mission3obstacleavoidenceSM
+from ma_ah_flexbe_behaviors.mission_4_parking_sm import mission4parkingSM
 from ma_ah_flexbe_behaviors.mission_5_stop_bar_sm import mission5stopbarSM
+from ma_ah_flexbe_behaviors.mission_6_tunnel_sm import mission6tunnelSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -55,9 +55,13 @@ class maahautoracefsmSM(Behavior):
 
 	def create(self):
 		right = "right"
+		left = "left"
+		middle = "middle"
 		# x:30 y:365, x:165 y:366
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.right = right
+		_state_machine.userdata.left = left
+		_state_machine.userdata.middle = middle
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -78,7 +82,7 @@ class maahautoracefsmSM(Behavior):
 										transitions={'finished': 'mission 3 obstacle avoidence', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
-			# x:427 y:184
+			# x:485 y:200
 			OperatableStateMachine.add('mission 3 obstacle avoidence',
 										self.use_behavior(mission3obstacleavoidenceSM, 'mission 3 obstacle avoidence'),
 										transitions={'finished': 'mission 4 parking', 'failed': 'failed'},

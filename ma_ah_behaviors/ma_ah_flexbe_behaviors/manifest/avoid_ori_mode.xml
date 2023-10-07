@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="avoid_ori_mode">
+
+	<executable package_path="ma_ah_flexbe_behaviors.avoid_ori_mode_sm" class="avoid_ori_modeSM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>Sat Oct 07 2023</date>
+	<description>
+		hihi
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

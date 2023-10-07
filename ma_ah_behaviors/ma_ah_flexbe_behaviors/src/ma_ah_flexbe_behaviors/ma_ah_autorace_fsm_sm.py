@@ -8,12 +8,12 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from flexbe_navigation_states.mission_4_parking_sm import mission4parkingSM
-from flexbe_navigation_states.mission_6_tunnel_sm import mission6tunnelSM
 from ma_ah_flexbe_behaviors.mission_1_traffic_light_sm import mission1trafficlightSM
 from ma_ah_flexbe_behaviors.mission_2_cross_line__sm import mission2crosslineSM
 from ma_ah_flexbe_behaviors.mission_3_obstacle_avoidence_sm import mission3obstacleavoidenceSM
+from ma_ah_flexbe_behaviors.mission_4_parking_sm import mission4parkingSM
 from ma_ah_flexbe_behaviors.mission_5_stop_bar_sm import mission5stopbarSM
+from ma_ah_flexbe_behaviors.mission_6_tunnel_sm import mission6tunnelSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 

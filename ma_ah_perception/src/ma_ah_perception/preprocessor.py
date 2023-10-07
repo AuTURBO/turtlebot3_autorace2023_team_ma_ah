@@ -49,12 +49,19 @@ class PreProcessor:
     # 이를 이용해 Bird Eye View를 생성한다.
     # =============================================
 
-    def warp_perspect(self, img):
-        width_margin_top = 195
-        height_margin_top = 320
+    def warp_perspect(self, img, camera_model):
+        if camera_model == "usb_cam":
+            width_margin_top = 195
+            height_margin_top = 320
 
-        width_margin_bottom = 0
-        height_margin_bottom = 40
+            width_margin_bottom = 0
+            height_margin_bottom = 40
+        elif camera_model == "gazebo":
+            width_margin_top = 195
+            height_margin_top = 320
+
+            width_margin_bottom = 0
+            height_margin_bottom = 40
 
         src = np.float32(
             [
@@ -141,39 +148,20 @@ class PreProcessor:
         midpoint = np.int(histogram.shape[0] / 2)  # 중앙점 계산
         # print(f"midpoint: {midpoint}")
         hist_find_margin = 60
-        mid_hist_find_margin = 5
 
-        left_hist_result = np.argmax(
-            histogram[: midpoint - hist_find_margin]
-        )  # 중앙점을 기준으로 히스토그램을 계산해 왼쪽 라인 시작점 구함
-        right_hist_result = (
-            midpoint + hist_find_margin + np.argmax(histogram[midpoint + hist_find_margin :])
-        )  # 중앙점을 기준으로 히스토그램을 계산해 오른쪽 라인 시작점 구함
-        mid_hist_result = (
-            midpoint
-            - mid_hist_find_margin
-            + np.argmax(
-                histogram[midpoint - mid_hist_find_margin : midpoint + mid_hist_find_margin]
-            )
-        )  # 중앙점을 기준으로 히스토그램을 계산해 오른쪽 라인 시작점 구함
+        result = np.argmax(histogram)
+        # left_hist_result = np.argmax(
+        #     histogram[: midpoint - hist_find_margin]
+        # )  # 중앙점을 기준으로 히스토그램을 계산해 왼쪽 라인 시작점 구함
+        # right_hist_result = (
+        #     midpoint + hist_find_margin + np.argmax(histogram[midpoint + hist_find_margin :])
+        # )  # 중앙점을 기준으로 히스토그램을 계산해 오른쪽 라인 시작점 구함
 
-        # print(left_hist_result, mid_hist_result, right_hist_result)
-
-        # if right_hist_result == 0: # 오른쪽 차선이 없으면 차량이 왼쪽으로 치우쳐져 있다고 판단
-        #     right_base = right_hist_result + midpoint + hist_find_margin +90 # 오른쪽 차선 탐색점을 더 오른쪽으로 설정
-        # else:
-        #     right_base = right_hist_result  # 오른쪽 차선이 존재하면 히스토그램을 찾은 좌표 그대로 사용(중앙값을 기준으로 우측 이미지에서 구했으므로 중앙값을 더해줌)
-
-        # if left_hist_result == 0: # 왼쪽 차선이 없으면 차량이 오른쪽으로 치우쳐져 있다고 판단
-        #     left_base = left_hist_result + midpoint -90 # 왼쪽 차선 탐색점을 더 왼쪽 설정
-        # else:
-        #     left_base = left_hist_result # 왼쪽 차선이 존재하면 히스토그램을 찾은 좌표 그대로 사용
-
-        right_base = right_hist_result
-        left_base = left_hist_result
-        mid_base = mid_hist_result
-        #print(left_base, right_base)
-        return left_base, mid_base, right_base
+        # right_base = right_hist_result
+        # left_base = left_hist_result
+        # mid_base = mid_hist_result
+        # print(f"left_base :{left_base}, right_base :{right_base}")
+        return result
 
     # =============================================
     # 차선검출에 이용되는 Sliding window 알고리즘
@@ -181,16 +169,20 @@ class PreProcessor:
     # 누적된 감지를 기반으로 차선 위치를 결정함.
     # =============================================
 
-    def sliding_window(self, img):
+    def sliding_window(self, img, lane_type):
         prev_detect_flag_left = False  # 직전 차선 검출 성공 플래그 False로 세팅 (왼쪽)
         prev_detect_flag_right = False  # 직전 차선 검출 성공 플래그 False로 세팅 (오른쪽)
         line_detect_fail_count_left = 0  # 차선 검출 실패 카운트 0으로 초기화 (왼쪽)
         line_detect_fail_count_right = 0  # 차선 검출 실패 카운트 0으로 초기화 (오른쪽)
         prev_detect_flag_mid = False  # 직전 차선 검출 성공 플래그 False로 세팅 (중간)
         line_detect_fail_count_mid = 0  # 차선 검출 실패 카운트 0으로 초기화 (중간)
-        left_base, mid_base, right_base = self.hist_line_peak(
-            img
-        )  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
+        
+        if lane_type == "left":
+            left_base = self.hist_line_peak(img)  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
+            print(f"left_base :{left_base}")
+        elif lane_type == "right":
+            right_base = self.hist_line_peak(img)
+            print(f"right_base :{right_base}")
 
         # Sliding Window
         y = 470  # 탐색 시작 Y좌표 결정
@@ -200,211 +192,159 @@ class PreProcessor:
         ry = []  # 오른쪽 차선 Y좌표 저장 리스트
         mx = []  # 중간 차선 X좌표 저장 리스트
         my = []  # 중간 차선 Y좌표 저장 리스트
-        self.window_width = 45  # window 폭
-        self.window_height = 3  # window 높이
+        self.window_width = 60  # window 폭
+        self.window_height = 10  # window 높이
         self.left_window_n = 0
         self.right_window_n = 0
         self.mid_window_n = 0
+
+        self.lane_num = 15
 
         msk = img.copy()  # 차선검출 결과를 디스플레이 하기 위한 이미지 복사
         msk = cv2.cvtColor(msk, cv2.COLOR_GRAY2BGR)  # 컬러 표시를 위해 색공간을 Gray에서 BGR로 변환
 
         while y > 0:  # window가 이미지 상단에 도달할때까지 반복
-            if self.left_window_n < 25:  # 왼쪽 차선 검출을 위한 window를 5개까지만 허용
-                window = img[
-                    y - self.window_height : y,
-                    left_base - self.window_width : left_base + self.window_width,
-                ]  # left window 생성
-                contours, _ = cv2.findContours(
-                    window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-                )  # window 영역에서 contour 검출
+            if lane_type == "left":
+                if self.left_window_n < self.lane_num:  # 왼쪽 차선 검출을 위한 window를 5개까지만 허용
+                    window = img[
+                        y - self.window_height : y,
+                        left_base - self.window_width : left_base + self.window_width,
+                    ]  # left window 생성
+                    contours, _ = cv2.findContours(
+                        window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+                    )  # window 영역에서 contour 검출
 
-                if len(contours) == 0:  # 차선을 못 찾았을떄
-                    if prev_detect_flag_left == False:  # 차선을 연속으로 못 찾았을떄
-                        line_detect_fail_count_left += 1  # 차선 검출 실패 카운트 증가
+                    if len(contours) == 0:  # 차선을 못 찾았을떄
+                        if prev_detect_flag_left == False:  # 차선을 연속으로 못 찾았을떄
+                            line_detect_fail_count_left += 1  # 차선 검출 실패 카운트 증가
+                            cv2.circle(
+                                msk,
+                                (left_base - self.window_width - 20, y - (self.window_height // 2)),
+                                1,
+                                (0, 50, 150),
+                                1,
+                            )
+
+                        prev_detect_flag_left = False  # 직전 차선 검출 성공 플래그 False로 세팅
                         cv2.circle(
                             msk,
-                            (left_base - self.window_width - 20, y - (self.window_height // 2)),
+                            (left_base - self.window_width, y - (self.window_height // 2)),
                             1,
-                            (0, 50, 150),
+                            (0, 125, 125),
                             1,
                         )
 
-                    prev_detect_flag_left = False  # 직전 차선 검출 성공 플래그 False로 세팅
-                    cv2.circle(
-                        msk,
-                        (left_base - self.window_width, y - (self.window_height // 2)),
-                        1,
-                        (0, 125, 125),
-                        1,
-                    )
-
-                if line_detect_fail_count_left < 10:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
-                    cv2.circle(
-                        msk,
-                        (left_base - self.window_width, y - (self.window_height // 2)),
-                        1,
-                        (0, 255, 0),
-                        1,
-                    )
-
-                    for contour in contours:
-                        M = cv2.moments(contour)  # contour 모멘트 계산
-                        if M["m00"] != 0:
-                            cx = int(M["m10"] / M["m00"])  # contour 모멘트 X 좌표 계산
-                            cy = int(M["m01"] / M["m00"])  # contour 모멘트 Y 좌표 계산
-                            lx.append(int(left_base - self.window_width + cx))  # 왼쪽 차선 X좌표 저장
-                            ly.append(int(y - (self.window_height // 2)))  # 왼쪽 차선 Y좌표 저장
-                            cv2.circle(
-                                msk,
-                                (left_base - self.window_width + cx, y - (self.window_height // 2)),
-                                1,
-                                (255, 0, 0),
-                                1,
-                            )
-                            left_base = (
-                                left_base - self.window_width + cx
-                            )  # 다음 차선(위쪽 존재) 검출 윈도우 좌표를 현재 검출된 contour 모멘트를 고려해서 수정
-                            # cv2.rectangle(msk, (left_base-self.window_width,y), (left_base+self.window_width,y-self.window_height), (255,0,0), 1)
-                            prev_detect_flag_left = True  # 직전 차선 검출 성공 플래그 True로 세팅
-                            self.left_line_detect_flag = True  # 차선 검출 성공 플래그 True로 세팅
-                            self.left_window_n += 1  # 왼쪽 윈도우 개수 증가
-
-                if len(lx) < 1:  # 왼쪽 차선을 못찾았을뗴
-                    # print("Left line No")
-                    self.left_line_detect_flag = False  # 왼쪽 차선 검출 성공 플래그 False로 세팅
-
-            if self.mid_window_n < 0:  # 중앙 차선 검출을 위한 window를 5개까지만 허용
-                window = img[
-                    y - self.window_height : y,
-                    mid_base - self.window_width : mid_base + self.window_width,
-                ]  # mid window 생성
-                contours, _ = cv2.findContours(
-                    window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-                )  # window 영역에서 contour 검출
-
-                if len(contours) == 0:  # 차선을 못 찾았을떄
-                    if prev_detect_flag_mid == False:  # 차선을 연속으로 못 찾았을떄
-                        line_detect_fail_count_mid += 1  # 차선 검출 실패 카운트 증가
+                    if line_detect_fail_count_left < 10:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
                         cv2.circle(
                             msk,
-                            (mid_base - self.window_width - 20, y - (self.window_height // 2)),
-                            1,
-                            (0, 50, 150),
-                            1,
-                        )
-
-                    prev_detect_flag_mid = False  # 직전 차선 검출 성공 플래그 False로 세팅
-                    cv2.circle(
-                        msk,
-                        (mid_base - self.window_width, y - (self.window_height // 2)),
-                        1,
-                        (0, 125, 125),
-                        1,
-                    )
-
-                if line_detect_fail_count_mid < 3:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
-                    cv2.circle(
-                        msk,
-                        (mid_base - self.window_width, y - (self.window_height // 2)),
-                        1,
-                        (0, 255, 0),
-                        1,
-                    )
-
-                    for contour in contours:
-                        M = cv2.moments(contour)  # contour 모멘트 계산
-                        if M["m00"] != 0:
-                            cx = int(M["m10"] / M["m00"])  # contour 모멘트 X 좌표 계산
-                            cy = int(M["m01"] / M["m00"])  # contour 모멘트 Y 좌표 계산
-                            mx.append(int(mid_base - self.window_width + cx))  # 왼쪽 차선 X좌표 저장
-                            my.append(int(y - (self.window_height // 2)))  # 왼쪽 차선 Y좌표 저장
-                            cv2.circle(
-                                msk,
-                                (mid_base - self.window_width + cx, y - (self.window_height // 2)),
-                                1,
-                                (255, 0, 0),
-                                1,
-                            )
-                            mid_base = (
-                                mid_base - self.window_width + cx
-                            )  # 다음 차선(위쪽 존재) 검출 윈도우 좌표를 현재 검출된 contour 모멘트를 고려해서 수정
-                            # cv2.rectangle(msk, (mid_base-self.window_width,y), (mid_base+self.window_width,y-self.window_height), (0,0,255), 1)
-                            prev_detect_flag_mid = True  # 직전 차선 검출 성공 플래그 True로 세팅
-                            self.mid_line_detect_flag = True  # 차선 검출 성공 플래그 True로 세팅
-                            self.mid_window_n += 1  # 왼쪽 윈도우 개수 증가
-
-            if self.right_window_n < 25:  # 오른쪽 차선 검출을 위한 window를 5개까지만 허용
-                window = img[
-                    y - self.window_height : y,
-                    right_base - self.window_width : right_base + self.window_width,
-                ]  # right window 생성
-
-                contours, _ = cv2.findContours(
-                    window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-                )  # window 영역에서 contour 검출
-                if len(contours) == 0:  # 차선을 못 찾았을떄
-                    if prev_detect_flag_right == False:  # 차선을 연속으로 못 찾았을떄
-                        line_detect_fail_count_right += 1  # 차선 검출 실패 카운트 증가
-                        cv2.circle(
-                            msk,
-                            (right_base - self.window_width - 20, y - (self.window_height // 2)),
+                            (left_base - self.window_width, y - (self.window_height // 2)),
                             1,
                             (0, 255, 0),
                             1,
                         )
 
-                    prev_detect_flag_right = False  # 직전 차선 검출 성공 플래그 False로 세팅
-                    cv2.circle(
-                        msk,
-                        (right_base - self.window_width - 10, y - (self.window_height // 2)),
-                        1,
-                        (0, 255, 255),
-                        1,
-                    )
+                        for contour in contours:
+                            M = cv2.moments(contour)  # contour 모멘트 계산
+                            if M["m00"] != 0:
+                                cx = int(M["m10"] / M["m00"])  # contour 모멘트 X 좌표 계산
+                                cy = int(M["m01"] / M["m00"])  # contour 모멘트 Y 좌표 계산
+                                lx.append(int(left_base - self.window_width + cx))  # 왼쪽 차선 X좌표 저장
+                                ly.append(int(y - (self.window_height // 2)))  # 왼쪽 차선 Y좌표 저장
+                                cv2.circle(
+                                    msk,
+                                    (left_base - self.window_width + cx, y - (self.window_height // 2)),
+                                    1,
+                                    (255, 0, 0),
+                                    1,
+                                )
+                                left_base = (
+                                    left_base - self.window_width + cx
+                                )  # 다음 차선(위쪽 존재) 검출 윈도우 좌표를 현재 검출된 contour 모멘트를 고려해서 수정
+                                # cv2.rectangle(msk, (left_base-self.window_width,y), (left_base+self.window_width,y-self.window_height), (255,0,0), 1)
+                                prev_detect_flag_left = True  # 직전 차선 검출 성공 플래그 True로 세팅
+                                self.left_line_detect_flag = True  # 차선 검출 성공 플래그 True로 세팅
+                                self.left_window_n += 1  # 왼쪽 윈도우 개수 증가
 
-                if line_detect_fail_count_right < 10:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
-                    cv2.circle(
-                        msk,
-                        (right_base - self.window_width, y - (self.window_height // 2)),
-                        1,
-                        (0, 0, 255),
-                        1,
-                    )
+                    if len(lx) < 1:  # 왼쪽 차선을 못찾았을뗴
+                        # print("Left line No")
+                        self.left_line_detect_flag = False  # 왼쪽 차선 검출 성공 플래그 False로 세팅
+        
+            elif lane_type == "right":
+                if self.right_window_n < self.lane_num:  # 오른쪽 차선 검출을 위한 window를 5개까지만 허용
+                    window = img[
+                        y - self.window_height : y,
+                        right_base - self.window_width : right_base + self.window_width,
+                    ]  # right window 생성
 
-                    for contour in contours:
-                        M = cv2.moments(contour)  # contour 모멘트 계산
-                        if M["m00"] != 0:
-                            cx = int(M["m10"] / M["m00"])  # contour 모멘트 X 좌표 계산
-                            cy = int(M["m01"] / M["m00"])  # contour 모멘트 Y 좌표 계산
-                            rx.append(int(right_base - self.window_width + cx))  # 오른쪽 차선 X좌표 저장
-                            ry.append(int(y - (self.window_height // 2)))  # 오른쪽 차선 Y좌표 저장
+                    contours, _ = cv2.findContours(
+                        window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+                    )  # window 영역에서 contour 검출
+                    if len(contours) == 0:  # 차선을 못 찾았을떄
+                        if prev_detect_flag_right == False:  # 차선을 연속으로 못 찾았을떄
+                            line_detect_fail_count_right += 1  # 차선 검출 실패 카운트 증가
                             cv2.circle(
                                 msk,
-                                (
-                                    right_base - self.window_width + cx,
-                                    y - (self.window_height // 2),
-                                ),
+                                (right_base - self.window_width - 20, y - (self.window_height // 2)),
                                 1,
                                 (0, 255, 0),
                                 1,
                             )
-                            right_base = (
-                                right_base - self.window_width + cx
-                            )  # 다음 차선(위쪽 존재) 검출 윈도우 좌표를 현재 검출된 contour 모멘트를 고려해서 수정
-                            # cv2.rectangle(msk, (right_base-self.window_width,y), (right_base+self.window_width,y-self.window_height), (0,255,0), 1)
-                            prev_detect_flag_right = True  # 직전 차선 검출 성공 플래그 True로 세팅
-                            self.right_line_detect_flag = True  # 차선 검출 성공 플래그 True로 세팅
-                            self.right_window_n += 1  # 오른쪽 윈도우 개수 증가
 
-                if len(rx) < 1:  # 오른쪽 차선을 못찾았을뗴
-                    # print("Right line No")
-                    self.right_line_detect_flag = False  # 오른쪽 차선 검출 성공 플래그 False로 세팅
+                        prev_detect_flag_right = False  # 직전 차선 검출 성공 플래그 False로 세팅
+                        cv2.circle(
+                            msk,
+                            (right_base - self.window_width - 10, y - (self.window_height // 2)),
+                            1,
+                            (0, 255, 255),
+                            1,
+                        )
+
+                    if line_detect_fail_count_right < 10:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
+                        cv2.circle(
+                            msk,
+                            (right_base - self.window_width, y - (self.window_height // 2)),
+                            1,
+                            (0, 0, 255),
+                            1,
+                        )
+
+                        for contour in contours:
+                            M = cv2.moments(contour)  # contour 모멘트 계산
+                            if M["m00"] != 0:
+                                cx = int(M["m10"] / M["m00"])  # contour 모멘트 X 좌표 계산
+                                cy = int(M["m01"] / M["m00"])  # contour 모멘트 Y 좌표 계산
+                                rx.append(int(right_base - self.window_width + cx))  # 오른쪽 차선 X좌표 저장
+                                ry.append(int(y - (self.window_height // 2)))  # 오른쪽 차선 Y좌표 저장
+                                cv2.circle(
+                                    msk,
+                                    (
+                                        right_base - self.window_width + cx,
+                                        y - (self.window_height // 2),
+                                    ),
+                                    1,
+                                    (0, 255, 0),
+                                    1,
+                                )
+                                right_base = (
+                                    right_base - self.window_width + cx
+                                )  # 다음 차선(위쪽 존재) 검출 윈도우 좌표를 현재 검출된 contour 모멘트를 고려해서 수정
+                                # cv2.rectangle(msk, (right_base-self.window_width,y), (right_base+self.window_width,y-self.window_height), (0,255,0), 1)
+                                prev_detect_flag_right = True  # 직전 차선 검출 성공 플래그 True로 세팅
+                                self.right_line_detect_flag = True  # 차선 검출 성공 플래그 True로 세팅
+                                self.right_window_n += 1  # 오른쪽 윈도우 개수 증가
+
+                    if len(rx) < 1:  # 오른쪽 차선을 못찾았을뗴
+                        # print("Right line No")
+                        self.right_line_detect_flag = False  # 오른쪽 차선 검출 성공 플래그 False로 세팅
 
             # cv2.rectangle(msk, (left_base-self.window_width,y), (left_base+self.window_width,y-self.window_height), (0,0,255), 1)
             # cv2.rectangle(msk, (right_base-self.window_width,y), (right_base+self.window_width,y-self.window_height), (0,0,255), 1)
             y -= self.window_height  # 윈도우 Y좌표 위로 이동
-        return msk, lx, ly, mx, my, rx, ry
+        
+        if lane_type == "left":
+            return msk, lx, ly
+        elif lane_type == "right":
+            return msk, rx, ry
 
     def filtering_lane(self, msk, lx, ly, mx, my, rx, ry):
         filtered_lx = []  # 필터링된 왼쪽 차선 X좌표 저장 리스트
@@ -422,7 +362,7 @@ class PreProcessor:
             filtered_lx.append(cx)
 
         if len(lx) < threshold_mid_lane_select:
-            #print("Left Lane Error")
+            print("Left Lane Error")
             filtered_lx = None
             filtered_ly = None
 
@@ -438,7 +378,7 @@ class PreProcessor:
 
         return filtered_lx, ly, mx, my, filtered_rx, ry
 
-    def drawing_lane(self, msk, lx, ly, mx, my, rx, ry):
+    def drawing_lane(self, msk, lx, ly, rx, ry):
         if lx != None:
             for i in range(len(lx)):
                 cv2.rectangle(
@@ -455,15 +395,6 @@ class PreProcessor:
                     (rx[k] - self.window_width, ry[k]),
                     (rx[k] + self.window_width, ry[k] - self.window_height),
                     (0, 255, 0),
-                    1,
-                )
-        if mx != None:
-            for j in range(len(mx)):
-                cv2.rectangle(
-                    msk,
-                    (mx[j] - self.window_width, my[j]),
-                    (mx[j] + self.window_width, my[j] - self.window_height),
-                    (0, 0, 255),
                     1,
                 )
 

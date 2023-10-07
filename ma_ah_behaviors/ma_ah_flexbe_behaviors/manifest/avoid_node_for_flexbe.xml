@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="avoid_node_for_flexbe">
+
+	<executable package_path="ma_ah_flexbe_behaviors.avoid_node_for_flexbe_sm" class="avoid_node_for_flexbeSM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>Sat Oct 07 2023</date>
+	<description>
+		change avoid node for flexbe
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

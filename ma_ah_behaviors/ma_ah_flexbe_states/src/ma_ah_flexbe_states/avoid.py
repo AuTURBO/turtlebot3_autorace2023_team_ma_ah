@@ -1,17 +1,16 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import rospy
-import math, tf, time, cv2
+import math, tf, cv2, os
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image, CompressedImage
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-from cv_bridge import CvBridge
+from cv_bridge import CvBridge, CvBridgeError
 from enum import Enum
 from ma_ah_perception.preprocessor import PreProcessor
 from ma_ah_perception.undistort import undistort_func
+
+
 
 class Mode(Enum):
     LANE = 1
@@ -20,13 +19,11 @@ class Mode(Enum):
 
 class AvoidNode:
     def __init__(self):
-
         rospy.Subscriber("/camera/image/compressed", CompressedImage, self.image_callback)
         rospy.Subscriber('/odom', Odometry, self.odom_callback, queue_size=1)
         rospy.Subscriber('/scan', LaserScan, self.scan_callback, queue_size=1)
 
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size = 1)
-        self.pub_max_vel = rospy.Publisher('/control/max_vel', Float64, queue_size = 1)
 
         self.steer_angle = Twist()
         self.center_lane = Float64()
@@ -45,16 +42,12 @@ class AvoidNode:
     def image_callback(self, msg):
         global lane_bin_th
         try:
-            # cv_image = CvBridge().imgmsg_to_cv2(msg, "bgr8")
             self.cv_image = CvBridge().compressed_imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
-        #else:
-        #    self.lane_detector(cv_image)
-            #cv2.imshow("Image window", cv_image)
-        #    cv2.waitKey(1)
 
     def odom_callback(self, odom_msg):
+        # 현재 robot의 yaw 값을 current_theta에 저장
         quaternion = (odom_msg.pose.pose.orientation.x, odom_msg.pose.pose.orientation.y, odom_msg.pose.pose.orientation.z, odom_msg.pose.pose.orientation.w)
         self.current_theta = self.euler_from_quaternion(quaternion)
 
@@ -67,21 +60,23 @@ class AvoidNode:
         else:
             self.last_current_theta = self.current_theta
 
+        # 현재 robot의 위치를 current_pos에 저장
+
         self.current_pos_x = odom_msg.pose.pose.position.x
         self.current_pos_y = odom_msg.pose.pose.position.y
-
         self.current_pos = math.sqrt(self.current_pos_x**2 + self.current_pos_y**2)
 
-        #print(self.current_pos_x, self.current_pos_y)
-
     def scan_callback(self, scan):
-        self.checkLeftObstacle(scan)
+        self.checkObstacle(scan)
 
     def euler_from_quaternion(self, quaternion):
         theta = tf.transformations.euler_from_quaternion(quaternion)[2]
         return theta
 
-    def checkLeftObstacle(self, scan):
+    # 전방 장애물 확인을 위한 함수
+    # scan 범위의 데이터가 threshold_distance 보다 작은 값이 나올 때
+    # 장애물을 검출로 판단
+    def checkObstacle(self, scan):
         scan_start = 175
         scan_end = 185
         threshold_distance = 0.21
@@ -90,20 +85,19 @@ class AvoidNode:
         for i in range(scan_start, scan_end):
             if scan.ranges[i] < threshold_distance and scan.ranges[i] > 0.01:
                 is_obstacle_detected = True
-                print(scan.ranges[i])
+                #print(scan.ranges[i])
 
         self.is_obstacle_detected = is_obstacle_detected
-        if (self.is_obstacle_detected):
-            print("obstacle!!!!")
+        #if (self.is_obstacle_detected):
+        #    print("obstacle!!!!")
 
-    def lane_detector(self, frame):
+    def lane_detector(self, frame, lane_direction):
         prev_target = 320
         frameRate = 11 #33
         frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
         # cv2.imshow("Distort", frame)
 
         frame = undistort_func(frame)
-
         cv2.imshow("Undistort", frame)
 
         gblur_img  = cv2.GaussianBlur(frame, (3, 3), sigmaX = 0, sigmaY = 0)
@@ -133,6 +127,15 @@ class AvoidNode:
         filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = self.pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
         self.pre_module.drawing_lane(msk, filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry)
 
+        # lane_direction은 following할 차선의 방향
+        # 왼쪽 차선만 보고 갈 경우 오른쪽 차선의 정보를 삭제
+        if lane_direction == "left":
+            filtered_rx = None
+            filtered_mx = None
+        elif lane_direction == "right":
+            filtered_lx = None
+            filtered_mx = None
+
         target = self.simple_controller(filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry)
 
         #target = LowPassFilter(0.9, prev_target, target)
@@ -146,7 +149,6 @@ class AvoidNode:
 
         self.steer_angle.linear.x = 0.1
         self.steer_angle.angular.z = angle
-
         self.pub_cmd_vel.publish(self.steer_angle)
 
         # center lane pub
@@ -211,38 +213,32 @@ class AvoidNode:
     def map(self, x,input_min,input_max,output_min,output_max):
         return (x-input_min)*(output_max-output_min)/(input_max-input_min)+output_min #map()함수 정의.
 
-    def rotate_90_degrees_odom(self, start_angle, theta):
+    # odom 정보를 받아서 원하는 각도만큼 회전하는 함수
+    # angular_vel는 각속도
+    # target_angle만큼 회전하도록함
+    # 오차범위가 있을경우 임의로 숫자를 더하거나 빼줌
+    def rotate_odom(self, start_ang, target_ang, angular_vel):
         while not rospy.is_shutdown():
             current_angle = self.current_theta
-            print(current_angle, start_angle)
-            if abs(current_angle - start_angle) < math.pi/2:
-                self.drive(0.0, theta)
+            print(current_angle, start_ang)
+            if abs(current_angle - start_ang) < target_ang:
+                self.drive(0.0, angular_vel)
             else:
                 self.drive(0.0, 0.0)
                 break
 
-    def move_forward_odom(self, distance, start_distance):
+    # odom 정보를 받아서 원하는 만큼 전진하는 함수
+    # 시작 좌표에서 distance 만큼 차이나는곳까지 전진
+    def move_forward_odom(self, start_dist, target_dist, linear_vel):
         while not rospy.is_shutdown():
             current_distance = self.current_pos
-            diff = abs(start_distance - current_distance)
-            print( diff)
-            if diff <= distance:
-                self.drive(0.2, 0.0)
+            diff = abs(start_dist - current_distance)
+            #print( diff)
+            if diff <= target_dist:
+                self.drive(linear_vel, 0.0)
             else:
                 self.drive(0.0, 0.0)
                 break
-
-    def rotate_90_degrees(self, t, theta):
-        for i in range(t):
-            self.drive(0.0, theta)
-            time.sleep(0.1)
-        self.drive(0.0, 0.0)
-
-    def move_forward(self, t):
-        for i in range(t):
-            self.drive(0.2, 0.0)
-            time.sleep(0.1)
-        self.drive(0.0, 0.0)
 
     def drive(self, linear_x, angular_z):
         self.steer_angle.linear.x = linear_x
@@ -250,44 +246,44 @@ class AvoidNode:
 
         self.pub_cmd_vel.publish(self.steer_angle)
 
-    def avoid(self):
+    # 장애물 회피 함수
+    # 회피할 방향에 따라 odom 정보를 사용하여 이동하는 함수
+    def avoid(self, lane_direction):
         print("AVOID !!!!!")
 
         self.drive(0.0, 0.0)
 
-        self.rotate_90_degrees(37, 0.5)
-        self.move_forward(15)
-        self.rotate_90_degrees(37, -0.5)
-        self.move_forward(20)
-        self.rotate_90_degrees(37, -0.5)
-        self.move_forward(15)
-        self.rotate_90_degrees(37, 0.5)
+        if lane_direction == "left":
+            self.rotate_odom(self.current_theta, math.radians(80), -0.5)
+            self.move_forward_odom(self.current_pos, 0.2, 0.2)
+            self.rotate_odom(self.current_theta, math.radians(80), 0.5)
+            self.lane_direction = "exit"
 
-        #self.rotate_90_degrees(self.current_theta, 0.5)
-        #self.move_forward(0.21, self.current_pos)
-        #self.rotate_90_degrees(self.current_theta, -0.5)
-        #self.move_forward(0.19, self.current_pos)
-        #self.rotate_90_degrees(self.current_theta, -0.5)
-        #self.move_forward(0.18, self.current_pos)
-        #self.rotate_90_degrees(self.current_theta, 0.5)
+        if lane_direction == "right":
+            self.rotate_odom(self.current_theta, math.radians(80), 0.5)
+            self.move_forward_odom(self.current_pos, 0.2, 0.2)
+            self.rotate_odom(self.current_theta, math.radians(80), -0.5)
+            self.lane_direction = "left"
+
 
 
     def main(self):
         rate = rospy.Rate(30)
         rospy.wait_for_message("/camera/image/compressed", CompressedImage, timeout=10)
-        self.current_mode = Mode.LANE
-        #self.direction = "left"
+        self.current_mode = Mode.LANE # 시작 모드
+        self.lane_direction = "right" # 시작 후 보고 갈 차선의 방향
         while not rospy.is_shutdown():
 
             if self.current_mode == Mode.LANE:
                 if self.cv_image is not None:
-                    self.lane_detector(self.cv_image)
+                    self.lane_detector(self.cv_image, self.lane_direction)
 
                 if self.is_obstacle_detected:
                     self.current_mode = Mode.AVOID
 
             if self.current_mode == Mode.AVOID:
-                self.avoid()
+                self.avoid(self.lane_direction) # direction을 넣어주어 회피방향을 알려준다. ex) 오른 차선 보고 가면 왼쪽으로 회피
+                self.is_obstacle_detected = False # 회피가 끝나면 장애물 검출 변수를 False로 원복
                 self.current_mode = Mode.LANE
 
             rate.sleep()

@@ -53,7 +53,7 @@ class Lane_detector:
 
     def simple_controller(self, lx, ly, rx, ry):
         target = 320
-        side_margin = 200
+        side_margin = 220
 
         if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
             print("ALL!!!")
@@ -85,7 +85,7 @@ class Lane_detector:
         #cv2.imshow("gblur_img", gblur_img)
 
         warped_img = pre_module.warp_perspect(gblur_img, "usb_cam")
-        cv2.imshow('warped_img', warped_img)	
+        # cv2.imshow('warped_img', warped_img)	
 
         left_lane_img, right_lane_img = self.color_filtering(warped_img)
 
@@ -109,8 +109,8 @@ class Lane_detector:
         left_msk, lx, ly = pre_module.sliding_window(left_lane_gray, "left")
         right_msk, rx, ry = pre_module.sliding_window(right_lane_gray, "right")
 
-        cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
-        cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
+        # cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
+        # cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
 
         msk = cv2.add(left_msk, right_msk)
         # filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
@@ -122,7 +122,7 @@ class Lane_detector:
 
         # target = 0
         angle = 320 - target
-        angle = self.map(angle, 100, -100, 2.5, -2.5) # 0.5
+        angle = self.map(angle, 100, -100, 3.5, -3.5) # 0.5
         # angle = angle * 0.5
         # print(f"angle: {angle}")
 
@@ -130,7 +130,7 @@ class Lane_detector:
         cmd_vel_msg.linear.x = 0.5 # 0.1
         cmd_vel_msg.angular.z = angle
 
-        # self.cmd_vel_publisher.publish(cmd_vel_msg)
+        self.cmd_vel_publisher.publish(cmd_vel_msg)
 
         center_line_msg = Float64()
         center_line_msg.data = target
@@ -249,7 +249,7 @@ if __name__ == '__main__':
     rospy.init_node("lane_detector")
     
     image_topic = "/camera/image/compressed"
-    cmd_vel_topic = "/cmd_vel"
+    cmd_vel_topic = "/cmd_vel" # /lane_detector/cmd_vel"
     center_lane_topic = "/detect/lane"
     processed_img_topic = "/processed/img"
 

@@ -43,24 +43,23 @@ try :
         gpio.output(trig, False)
         while gpio.input(echo) == 0 :
             pulse_start = time.time()
+#            print("pulse_start : ", pulse_start)
         while gpio.input(echo) == 1 :
             pulse_end = time.time()
         pulse_duration = pulse_end - pulse_start
         distance = pulse_duration * 17000
-        if pulse_duration >=0.01746:
-            #print('time out')
-            continue
-        elif distance > 300 or distance==0:
-            #print('out of range')
-            continue
+        # if pulse_duration >=0.01746:
+        #     print('time out')
+        #     #continue
+        # elif distance > 300 or distance==0:
+        #     print('out of range')
+        #     #continue
         distance = round(distance, 3)
-        #print ('Distance : %f cm'%distance)
+        print ('Distance : %f cm'%distance)
         sensor.dist_sendor(distance)
         
         sensor.r.sleep()
         
-except (KeyboardInterrupt, SystemExit):
-    gpio.cleanup()
-    sys.exit(0)
-except:
-    gpio.cleanup()
+except Exception as e:
+    print()
+    print(e)

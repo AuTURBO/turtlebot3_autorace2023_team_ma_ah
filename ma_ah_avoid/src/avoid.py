@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import rospy
-import math, tf, time, cv2
+import math, tf, cv2, os
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image, CompressedImage
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-from cv_bridge import CvBridge
+from cv_bridge import CvBridge, CvBridgeError
 from enum import Enum
 from ma_ah_perception.preprocessor import PreProcessor
 from ma_ah_perception.undistort import undistort_func
@@ -20,13 +20,11 @@ class Mode(Enum):
 
 class AvoidNode:
     def __init__(self):
-
         rospy.Subscriber("/camera/image/compressed", CompressedImage, self.image_callback)
         rospy.Subscriber('/odom', Odometry, self.odom_callback, queue_size=1)
         rospy.Subscriber('/scan', LaserScan, self.scan_callback, queue_size=1)
 
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size = 1)
-        self.pub_max_vel = rospy.Publisher('/control/max_vel', Float64, queue_size = 1)
 
         self.steer_angle = Twist()
         self.center_lane = Float64()
@@ -48,10 +46,6 @@ class AvoidNode:
             self.cv_image = CvBridge().compressed_imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
-        #else:
-        #    self.lane_detector(cv_image)
-            #cv2.imshow("Image window", cv_image)
-        #    cv2.waitKey(1)
 
     def odom_callback(self, odom_msg):
         # 현재 robot의 yaw 값을 current_theta에 저장
@@ -105,7 +99,6 @@ class AvoidNode:
         # cv2.imshow("Distort", frame)
 
         frame = undistort_func(frame)
-
         cv2.imshow("Undistort", frame)
 
         gblur_img  = cv2.GaussianBlur(frame, (3, 3), sigmaX = 0, sigmaY = 0)
@@ -143,6 +136,7 @@ class AvoidNode:
         elif lane_direction == "right":
             filtered_lx = None
             filtered_mx = None
+
         target = self.simple_controller(filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry)
 
         #target = LowPassFilter(0.9, prev_target, target)
@@ -156,7 +150,6 @@ class AvoidNode:
 
         self.steer_angle.linear.x = 0.1
         self.steer_angle.angular.z = angle
-
         self.pub_cmd_vel.publish(self.steer_angle)
 
         # center lane pub
@@ -225,11 +218,11 @@ class AvoidNode:
     # angular_vel는 각속도
     # target_angle만큼 회전하도록함
     # 오차범위가 있을경우 임의로 숫자를 더하거나 빼줌
-    def rotate_odom(self, start_angle, target_angle, angular_vel):
+    def rotate_odom(self, start_ang, target_ang, angular_vel):
         while not rospy.is_shutdown():
             current_angle = self.current_theta
-            print(current_angle, start_angle)
-            if abs(current_angle - start_angle) < target_angle:
+            print(current_angle, start_ang)
+            if abs(current_angle - start_ang) < target_ang:
                 self.drive(0.0, angular_vel)
             else:
                 self.drive(0.0, 0.0)
@@ -237,12 +230,12 @@ class AvoidNode:
 
     # odom 정보를 받아서 원하는 만큼 전진하는 함수
     # 시작 좌표에서 distance 만큼 차이나는곳까지 전진
-    def move_forward_odom(self, start_distance, target_distance, linear_vel):
+    def move_forward_odom(self, start_dist, target_dist, linear_vel):
         while not rospy.is_shutdown():
             current_distance = self.current_pos
-            diff = abs(start_distance - current_distance)
+            diff = abs(start_dist - current_distance)
             #print( diff)
-            if diff <= target_distance:
+            if diff <= target_dist:
                 self.drive(linear_vel, 0.0)
             else:
                 self.drive(0.0, 0.0)
@@ -254,21 +247,23 @@ class AvoidNode:
 
         self.pub_cmd_vel.publish(self.steer_angle)
 
+    # 장애물 회피 함수
+    # 회피할 방향에 따라 odom 정보를 사용하여 이동하는 함수
     def avoid(self, lane_direction):
         print("AVOID !!!!!")
 
         self.drive(0.0, 0.0)
 
         if lane_direction == "left":
-            self.rotate_odom(self.current_theta, math.pi/2-0.2, -0.5)
+            self.rotate_odom(self.current_theta, math.radians(80), -0.5)
             self.move_forward_odom(self.current_pos, 0.2, 0.2)
-            self.rotate_odom(self.current_theta, math.pi/2-0.2, 0.5)
+            self.rotate_odom(self.current_theta, math.radians(80), 0.5)
             self.lane_direction = "exit"
 
         if lane_direction == "right":
-            self.rotate_odom(self.current_theta, math.pi/2-0.2, 0.5)
+            self.rotate_odom(self.current_theta, math.radians(80), 0.5)
             self.move_forward_odom(self.current_pos, 0.2, 0.2)
-            self.rotate_odom(self.current_theta, math.pi/2-0.2, -0.5)
+            self.rotate_odom(self.current_theta, math.radians(80), -0.5)
             self.lane_direction = "left"
 
 

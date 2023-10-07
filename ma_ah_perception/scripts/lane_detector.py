@@ -122,12 +122,12 @@ class Lane_detector:
 
         # target = 0
         angle = 320 - target
-        angle = self.map(angle, 100, -100, 2.5, -2.5) # 0.5
+        angle = self.map(angle, 100, -100, 3.0, -3.0) # 0.5
         # angle = angle * 0.5
         # print(f"angle: {angle}")
 
         cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = 0.5 # 0.1
+        cmd_vel_msg.linear.x = 0.8 # 0.1
         cmd_vel_msg.angular.z = angle
 
         self.cmd_vel_publisher.publish(cmd_vel_msg)

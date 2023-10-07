@@ -6,5 +6,5 @@ CMakeFiles/myplugins.dir/plugin/yololayer.cu.o
  ../include/cuda_utils.h
  ../include/macros.h
  ../include/types.h
- /home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.cu
- /home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
+ /home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.cu
+ /home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h

@@ -20,11 +20,11 @@ NvInfer.h
 config.h
 ../include/config.h
 
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.cu
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.cu
 yololayer.h
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
 cuda_utils.h
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/cuda_utils.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/cuda_utils.h
 assert.h
 -
 vector
@@ -32,11 +32,11 @@ vector
 iostream
 -
 
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/yololayer.h
 macros.h
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/macros.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/macros.h
 types.h
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin/types.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin/types.h
 vector
 -
 string

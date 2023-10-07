@@ -6,5 +6,5 @@ CUDA_FLAGS = -g -Xcompiler=-fPIC   -std=c++11
 
 CUDA_DEFINES = -DAPI_EXPORTS -Dmyplugins_EXPORTS
 
-CUDA_INCLUDES = -I/home/nvidia/JetsonYoloV7-TensorRT/yolov7/include -I/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin -I/usr/local/include/opencv4 
+CUDA_INCLUDES = -I/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/include -I/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin -I/usr/local/include/opencv4 
 

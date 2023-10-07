@@ -51,11 +51,11 @@ class PreProcessor:
 
     def warp_perspect(self, img, camera_model):
         if camera_model == "usb_cam":
-            width_margin_top = 195
-            height_margin_top = 320
+            width_margin_top = 100
+            height_margin_top = 300
 
             width_margin_bottom = 0
-            height_margin_bottom = 40
+            height_margin_bottom = 100
         elif camera_model == "gazebo":
             width_margin_top = 195
             height_margin_top = 320
@@ -87,10 +87,10 @@ class PreProcessor:
 
         # src, dst 시각화(디버깅 용)
 
-        # cv2.circle(img, (int(src[0][0]), int(src[0][1])), 1, (255, 0, 0), 10)
-        # cv2.circle(img, (int(src[1][0]), int(src[1][1])), 1, (0, 255, 0), 10)
-        # cv2.circle(img, (int(src[2][0]), int(src[2][1])), 1, (0, 0, 255), 10)
-        # cv2.circle(img, (int(src[3][0]), int(src[3][1])), 1, (255, 255, 0), 10)
+        cv2.circle(img, (int(src[0][0]), int(src[0][1])), 1, (255, 0, 0), 10)
+        cv2.circle(img, (int(src[1][0]), int(src[1][1])), 1, (0, 255, 0), 10)
+        cv2.circle(img, (int(src[2][0]), int(src[2][1])), 1, (0, 0, 255), 10)
+        cv2.circle(img, (int(src[3][0]), int(src[3][1])), 1, (255, 255, 0), 10)
 
         # cv2.circle(img, (int(dst[0][0]), int(dst[0][1])), 1, (255,0 ,0), 10)
         # cv2.circle(img, (int(dst[1][0]), int(dst[1][1])), 1, (0,255 ,0), 10)
@@ -99,7 +99,7 @@ class PreProcessor:
 
         roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
 
-        # cv2.imshow("roi", roi)
+        cv2.imshow("roi", roi)
 
         warped_img = cv2.warpPerspective(
             roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR
@@ -170,6 +170,7 @@ class PreProcessor:
     # =============================================
 
     def sliding_window(self, img, lane_type):
+        print(img.shape)
         prev_detect_flag_left = False  # 직전 차선 검출 성공 플래그 False로 세팅 (왼쪽)
         prev_detect_flag_right = False  # 직전 차선 검출 성공 플래그 False로 세팅 (오른쪽)
         line_detect_fail_count_left = 0  # 차선 검출 실패 카운트 0으로 초기화 (왼쪽)
@@ -197,6 +198,7 @@ class PreProcessor:
         self.left_window_n = 0
         self.right_window_n = 0
         self.mid_window_n = 0
+        self.lane_count_threshold = 5
 
         self.lane_num = 15
 
@@ -234,7 +236,7 @@ class PreProcessor:
                             1,
                         )
 
-                    if line_detect_fail_count_left < 10:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
+                    if line_detect_fail_count_left < self.lane_count_threshold:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
                         cv2.circle(
                             msk,
                             (left_base - self.window_width, y - (self.window_height // 2)),
@@ -299,7 +301,7 @@ class PreProcessor:
                             1,
                         )
 
-                    if line_detect_fail_count_right < 10:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
+                    if line_detect_fail_count_right < self.lane_count_threshold:  # 차선 검출 실패 카운트가 5 이하일떄 차선으로 판단
                         cv2.circle(
                             msk,
                             (right_base - self.window_width, y - (self.window_height // 2)),

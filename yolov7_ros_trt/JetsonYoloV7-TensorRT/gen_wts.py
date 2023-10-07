@@ -29,6 +29,7 @@ device = select_device('cpu')
 # Load model
 model = torch.load(pt_file, map_location=device)['model'].float()  # load to FP32
 
+
 # update anchor_grid info
 anchor_grid = model.model[-1].anchors * model.model[-1].stride[..., None, None]
 # model.model[-1].anchor_grid = anchor_grid

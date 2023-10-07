@@ -22,8 +22,7 @@ pre_module = PreProcessor(roi_height, roi_width)
 
 
 class Lane_detector:
-    def __init__(self, image_topic, cmd_vel_topic, center_lane_topic):
-
+    def __init__(self, img_topic, cmd_vel_topic, center_lane_topic, processed_img_topic):
         self.lane_bin_th = 120  # 145
         self.frameWidth = 0
         self.frameHeight = 0
@@ -32,9 +31,11 @@ class Lane_detector:
         self.green = (0, 255, 0)
         self.red = (0, 0, 255)
 
-        self.img_subscriber = rospy.Subscriber(image_topic, CompressedImage, self.img_cb)
+        self.img_subscriber = rospy.Subscriber(img_topic, CompressedImage, self.img_cb)
         self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
         self.cener_line_publisher = rospy.Publisher(center_lane_topic, Float64, queue_size=10)
+
+        self.processed_img_publisher = rospy.Publisher(processed_img_topic, Image, queue_size=10)
     
     def img_cb(self, img_msg):
         try:
@@ -43,7 +44,9 @@ class Lane_detector:
         except CvBridgeError as e:
             print(e)
         else:
+            #cv2.imshow('callback', cv_image)	# 프레임 보여주기
             self.process(cv_image)
+
 
     def map(self, x,input_min,input_max,output_min,output_max):
         return (x-input_min)*(output_max-output_min)/(input_max-input_min)+output_min #map()함수 정의.
@@ -75,13 +78,13 @@ class Lane_detector:
 
         # cv2.imshow("Distort", frame)
 
-        frame = undistort_func(frame)
+        # frame = undistort_func(frame)
         #cv2.imshow("Undistort", frame)
 
         gblur_img  = cv2.GaussianBlur(frame, (3, 3), sigmaX = 0, sigmaY = 0)
         #cv2.imshow("gblur_img", gblur_img)
 
-        warped_img = pre_module.warp_perspect(gblur_img, "gazebo")
+        warped_img = pre_module.warp_perspect(gblur_img, "usb_cam")
         cv2.imshow('warped_img', warped_img)	
 
         left_lane_img, right_lane_img = self.color_filtering(warped_img)
@@ -119,12 +122,12 @@ class Lane_detector:
 
         # target = 0
         angle = 320 - target
-        angle = self.map(angle, 100, -100, 1.0, -1.0)
+        angle = self.map(angle, 100, -100, 2.5, -2.5) # 0.5
         # angle = angle * 0.5
         # print(f"angle: {angle}")
 
         cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = 0.1 #0.05
+        cmd_vel_msg.linear.x = 0.5 # 0.1
         cmd_vel_msg.angular.z = angle
 
         self.cmd_vel_publisher.publish(cmd_vel_msg)
@@ -140,6 +143,26 @@ class Lane_detector:
 
         key = cv2.waitKey(1)  # frameRate msec동안 한 프레임을 보여준다
         
+
+        # Convert the OpenCV image to a JPEG image
+        # try:
+        #     #send_frame = cv2.resize(frame, dsize=(320, 240), interpolation=cv2.INTER_AREA)
+        #     # jpeg_image = cv2.imencode('.jpg', send_frame)[1].tostring()
+        #     # # Construct a ROS compressed image message
+        #     # compressed_image = CompressedImage()
+        #     # compressed_image.header.stamp = rospy.Time.now()
+        #     # compressed_image.format = "jpeg"
+        #     # compressed_image.data = jpeg_image
+
+        #     # cv_image = CvBridge().imgmsg_to_cv2(img_msg, "bgr8")
+        #     send_image = CvBridge().cv2_to_imgmsg(frame)
+        #     # cv_image = CvBridge().compressed_imgmsg_to_cv2(img_msg, "bgr8")
+
+        #     # self.processed_img_publisher.publish(compressed_image)
+        #     #self.processed_img_publisher.publish(send_image)
+        # except Exception as e:
+        #     rospy.logerr(e)
+            
         # 키 입력을 받으면 키값을 key로 저장
         if key == ord('q'):
             sys.exit(0)
@@ -164,8 +187,8 @@ class Lane_detector:
         lab_low = 190
         lab_high = 255
         
-        hls_lower_white = (0, 235, 0)
-        hls_upper_white = (255, 255, 255)
+        hls_lower_white = (0, 240, 0)
+        hls_upper_white = (255, 255, 230)
 
         hls_img = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
         # 색상 범위를 제한하여 mask 생성
@@ -177,7 +200,7 @@ class Lane_detector:
         # cv2.imshow('hls_mask', hls_mask)
         # cv2.imshow('hls_result', hls_result)
 
-        lab_lower_yellow= (100, 0, 150)
+        lab_lower_yellow= (90, 0, 140)
         lab_upper_yellow = (255, 255, 255)
 
         lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
@@ -228,7 +251,8 @@ if __name__ == '__main__':
     image_topic = "/camera/image/compressed"
     cmd_vel_topic = "/cmd_vel"
     center_lane_topic = "/detect/lane"
+    processed_img_topic = "/processed/img"
 
     # lane_detector = Lane_detector(image_topic, cmd_vel_topic)
-    lane_detector = Lane_detector(image_topic, cmd_vel_topic, center_lane_topic)
+    lane_detector = Lane_detector(image_topic, cmd_vel_topic, center_lane_topic, processed_img_topic)
     rospy.spin()

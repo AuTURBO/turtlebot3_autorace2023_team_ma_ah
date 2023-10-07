@@ -18,11 +18,11 @@ cstdint
 opencv2/opencv.hpp
 -
 
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/src/preprocess.cu
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/src/preprocess.cu
 preprocess.h
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/src/preprocess.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/src/preprocess.h
 cuda_utils.h
-/home/nvidia/JetsonYoloV7-TensorRT/yolov7/src/cuda_utils.h
+/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/src/cuda_utils.h
 
 /usr/local/include/opencv4/opencv2/calib3d.hpp
 opencv2/core.hpp

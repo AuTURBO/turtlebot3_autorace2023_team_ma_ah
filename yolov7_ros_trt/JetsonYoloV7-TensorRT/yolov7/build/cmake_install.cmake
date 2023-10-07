@@ -1,4 +1,4 @@
-# Install script for directory: /home/nvidia/JetsonYoloV7-TensorRT/yolov7
+# Install script for directory: /home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/nvidia/JetsonYoloV7-TensorRT/yolov7/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

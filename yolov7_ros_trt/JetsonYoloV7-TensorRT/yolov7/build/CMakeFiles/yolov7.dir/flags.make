@@ -7,11 +7,11 @@ CUDA_FLAGS = -g   -std=c++11 -std=c++11
 
 CUDA_DEFINES = -DAPI_EXPORTS
 
-CUDA_INCLUDES = -I/home/nvidia/JetsonYoloV7-TensorRT/yolov7/include -I/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin -isystem=/usr/local/include/opencv4 
+CUDA_INCLUDES = -I/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/include -I/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin -isystem=/usr/local/include/opencv4 
 
 CXX_FLAGS = -g   -std=c++11 -std=gnu++11
 
 CXX_DEFINES = -DAPI_EXPORTS
 
-CXX_INCLUDES = -I/home/nvidia/JetsonYoloV7-TensorRT/yolov7/include -I/home/nvidia/JetsonYoloV7-TensorRT/yolov7/plugin -I/usr/local/cuda/targets/aarch64-linux/include -isystem /usr/local/include/opencv4 
+CXX_INCLUDES = -I/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/include -I/home/nvidia/catkin_ws/src/turtlebot3_autorace2023_team_ma_ah/yolov7_ros_trt/JetsonYoloV7-TensorRT/yolov7/plugin -I/usr/local/cuda/targets/aarch64-linux/include -isystem /usr/local/include/opencv4 
 

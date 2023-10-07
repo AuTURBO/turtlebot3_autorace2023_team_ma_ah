@@ -5,6 +5,14 @@ import cv2
 import numpy as np
 from sensor_msgs.msg import CompressedImage
 
+
+pipeline = " ! ".join(["v4l2src device=/dev/video0",
+                       "video/x-raw, width=640, height=480, framerate=30/1",
+                       "videoconvert",
+                       "video/x-raw, format=(string)BGR",
+                       "appsink"
+                       ])
+
 def camera_publisher():
     # Initialize the node with the name 'camera_publisher'
     rospy.init_node('camera_publisher', anonymous=True)
@@ -13,7 +21,8 @@ def camera_publisher():
     pub = rospy.Publisher('/camera/image/compressed', CompressedImage, queue_size=10)
 
     # Set the video source to the default camera.
-    cap = cv2.VideoCapture(0)
+    #cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
     if not cap.isOpened():
         rospy.logerr("Unable to open camera")
         return
@@ -21,8 +30,8 @@ def camera_publisher():
     rate = rospy.Rate(60)  # 10 Hz
     while not rospy.is_shutdown():
         ret, frame = cap.read()
-        cv2.imshow("frame", frame)
-        cv2.waitKey(1)
+        #cv2.imshow("frame", frame)
+        #cv2.waitKey(1)
         if not ret:
             rospy.logerr("Failed to read from camera")
             break

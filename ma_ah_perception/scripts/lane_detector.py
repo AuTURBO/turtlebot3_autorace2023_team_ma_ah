@@ -54,6 +54,8 @@ class Lane_detector:
 
         if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
             print("ALL!!!")
+            print(f"lx :{lx[0]}, rx :{rx[0]}")
+            target = lx[0] + ((rx[0] - lx[0]) // 2)
         elif lx != None and len(lx) > 3:
             print("Right!!!")
             #print(f"val: {lx[0]}")
@@ -67,14 +69,14 @@ class Lane_detector:
 
 
     def process(self, frame):
-        print(frame.shape)
+        #print(frame.shape)
 
         frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
 
         # cv2.imshow("Distort", frame)
 
         frame = undistort_func(frame)
-        cv2.imshow("Undistort", frame)
+        #cv2.imshow("Undistort", frame)
 
         gblur_img  = cv2.GaussianBlur(frame, (3, 3), sigmaX = 0, sigmaY = 0)
         #cv2.imshow("gblur_img", gblur_img)
@@ -85,7 +87,7 @@ class Lane_detector:
         left_lane_img, right_lane_img = self.color_filtering(warped_img)
 
         lane_pixel_img = cv2.add(left_lane_img, right_lane_img)
-        cv2.imshow("lane_pixel_img", lane_pixel_img)
+        #cv2.imshow("lane_pixel_img", lane_pixel_img)
 
         gray = cv2.cvtColor(lane_pixel_img, cv2.COLOR_BGR2GRAY)
         
@@ -117,12 +119,12 @@ class Lane_detector:
 
         # target = 0
         angle = 320 - target
-        angle = self.map(angle, 100, -100, 3.0, -3.0)
+        angle = self.map(angle, 100, -100, 1.0, -1.0)
         # angle = angle * 0.5
         # print(f"angle: {angle}")
 
         cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = 0.1
+        cmd_vel_msg.linear.x = 0.1 #0.05
         cmd_vel_msg.angular.z = angle
 
         self.cmd_vel_publisher.publish(cmd_vel_msg)

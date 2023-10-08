@@ -9,7 +9,7 @@
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from ma_ah_flexbe_states.lane_control import ControlLaneState
-from ma_ah_flexbe_states.move_base import MoveBaseState as ma_ah_flexbe_states__MoveBaseState
+from ma_ah_flexbe_states.move_base import MoveBaseState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -44,12 +44,14 @@ class mission6tunnelSM(Behavior):
 
 
 	def create(self):
-		goal_waypoint = [0, 0, 0]
-		left = "left"
+		initial_pose = [-2.5, 2.2, -1.57]
+		middle = "middle"
+		waypoint = [0.2, -1.75, 0]
 		# x:30 y:638, x:130 y:638
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
-		_state_machine.userdata.waypoint = goal_waypoint
-		_state_machine.userdata.left = left
+		_state_machine.userdata.initial_pose = initial_pose
+		_state_machine.userdata.middle = middle
+		_state_machine.userdata.waypoint = waypoint
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -58,19 +60,19 @@ class mission6tunnelSM(Behavior):
 
 
 		with _state_machine:
-			# x:394 y:158
+			# x:519 y:100
 			OperatableStateMachine.add('goal_move_base',
-										ma_ah_flexbe_states__MoveBaseState(),
-										transitions={'arrived': 'lane_control', 'failed': 'goal_move_base'},
+										MoveBaseState(),
+										transitions={'arrived': 'lane_control', 'failed': 'failed'},
 										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
 										remapping={'waypoint': 'waypoint'})
 
-			# x:586 y:362
+			# x:664 y:329
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										remapping={'lane_info': 'middle'})
 
 
 		return _state_machine

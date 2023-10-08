@@ -46,11 +46,13 @@ class movingtestSM(Behavior):
 		left = "left"
 		right = "right"
 		go = "go"
+		back = "back"
 		# x:30 y:365, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.left = left
 		_state_machine.userdata.right = right
 		_state_machine.userdata.go = go
+		_state_machine.userdata.back = back
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -59,26 +61,26 @@ class movingtestSM(Behavior):
 
 
 		with _state_machine:
-			# x:60 y:28
-			OperatableStateMachine.add('left',
-										MovingControlState(),
-										transitions={'procced': 'left', 'done': 'go'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'left'})
-
-			# x:60 y:167
-			OperatableStateMachine.add('right',
-										MovingControlState(),
-										transitions={'procced': 'right', 'done': 'finished'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'right'})
-
-			# x:224 y:120
+			# x:495 y:89
 			OperatableStateMachine.add('go',
 										MovingControlState(),
 										transitions={'procced': 'go', 'done': 'right'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'go'})
+
+			# x:406 y:204
+			OperatableStateMachine.add('go_2',
+										MovingControlState(),
+										transitions={'procced': 'go_2', 'done': 'finished'},
+										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
+										remapping={'moving_info': 'go'})
+
+			# x:87 y:198
+			OperatableStateMachine.add('right',
+										MovingControlState(),
+										transitions={'procced': 'right', 'done': 'go_2'},
+										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
+										remapping={'moving_info': 'right'})
 
 
 		return _state_machine

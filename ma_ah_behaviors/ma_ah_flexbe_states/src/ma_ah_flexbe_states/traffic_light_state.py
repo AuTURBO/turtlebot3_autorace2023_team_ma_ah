@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # -*- coding: utf-8 -*-
 
 import rospy
@@ -10,9 +9,10 @@ from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
+from std_msgs.msg import Int32
 
 
-class FindParkingState(EventState):
+class TrafficLightState(EventState):
     '''
     Example for a state to detect parking spots.
     This state listens to a topic for parking information and reacts accordingly.
@@ -24,31 +24,29 @@ class FindParkingState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(FindParkingState, self).__init__(outcomes=['left', 'right', 'proceed'])
+        super(TrafficLightState, self).__init__(outcomes=['proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
-        self._sub = ProxySubscriberCached({"/parking_detection": String})
-        self._parking_proceed = False
+        self._sub = ProxySubscriberCached({"/traffic_light": String})
 
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
+        self.current_traffic_light = elf._sub.has_msg("/traffic_light")
 
-        if self._sub.has_msg("/parking_detection") == "procced":
-            Logger.loginfo("Waiting for parking detection...")
+        if self.current_traffic_light == "green":
+            Logger.loginfo("green traffic light")
+            return 'done'
+        else:
+            Logger.loginfo("Current Traffic Light : ", )
             return 'proceed'
-        elif self._sub.get_last_msg("/parking_detection").data == "left":
-            Logger.loginfo("Parking spot detected on the left.")
-            return 'left'
-        elif self._sub.get_last_msg("/parking_detection").data == "right":
-            Logger.loginfo("Parking spot detected on the right.")
-            return 'right'
         
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.
         # It is typically used to start actions related to this state.
-        Logger.loginfo('Entered state Parking')
+        # Logger.loginfo('Entered state Parking')
+        pass
 
     # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="present_for_ws">
+
+	<executable package_path="ma_ah_flexbe_behaviors.present_for_ws_sm" class="present_for_wsSM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>Sun Oct 08 2023</date>
+	<description>
+		hi hello
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

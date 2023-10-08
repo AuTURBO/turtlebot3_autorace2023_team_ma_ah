@@ -15,7 +15,11 @@ from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from enum import Enum
 
-from ma_ah_perception.lane_detector import Lane_detector
+
+import sys
+sys.path.append('/root/ros_ws/src/turtlebot3_autorace2023_team_ma_ah/ma_ah_perception')
+
+from . import Lane_detector
 
 
 

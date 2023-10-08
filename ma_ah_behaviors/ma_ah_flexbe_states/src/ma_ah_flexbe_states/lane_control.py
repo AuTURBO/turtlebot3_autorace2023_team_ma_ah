@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, String
 
 from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 
-from std_msgs.msg import String
 
 import math
  
@@ -22,15 +21,17 @@ class ControlLaneState(EventState):
         super(ControlLaneState, self).__init__(outcomes=['lane_control', 'mission_control'], input_keys=['lane_info'])
         
         self.lastError = 0
-        self._MAX_VEL = 0.5
+        self._MAX_VEL = 0.1
         
         self.sub_middle_lane = ProxySubscriberCached({"/detect/lane": Float64})
-        # self.sub_middle_lane = ProxySubscriberCached({"/detect/lane": Float64})
-        # self.sub_middle_lane = ProxySubscriberCached({"/detect/lane": Float64})
+        self.sub_left_lane = ProxySubscriberCached({"/detect/lane": Float64})
+        self.sub_right_lane = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
         self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
-        self.sub_traffic_sign_size = ProxySubscriberCached({"/traffic_sign_size": Float64})
+
+        self.sub_lane_detector_cmd_vel = ProxySubscriberCached({"/lane_detector/cmd_vel": Twist})
+        # self.sub_traffic_sign_size = ProxySubscriberCached({"/traffic_sign_size": Float64})
     
         # pure pursuit control
         self.WB = 0.20
@@ -53,6 +54,7 @@ class ControlLaneState(EventState):
         twist = Twist()
         twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.06)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
+        
         # self
         # self.pub_cmd_vel.publish(twist)
         self.pub_cmd_vel.publish("/cmd_vel", twist)
@@ -90,19 +92,20 @@ class ControlLaneState(EventState):
             
 
     def execute(self, userdata):
-        if self.sub_middle_lane.get_last_msg("/detect/lane").data:
+        if True:
             # Logger.loginfo("Traffic sign size: {}".format(self.sub_traffic_sign_size.get_last_msg("/traffic_sign_size").data))
             if userdata.lane_info == 'left':
                 desired_center = self.sub_middle_lane.get_last_msg("/detect/lane").data
-                self.pid_control(desired_center)
             elif userdata.lane_info == 'right':
-                desired_center = self.sub_middle_lane.get_last_msg("/detect/lane").data
-                self.pid_control(desired_center)
+                desired_center = self.sub_left_lane.get_last_msg("/detect/lane").data
             else:
-                desired_center = self.sub_middle_lane.get_last_msg("/detect/lane").data
-                self.pid_control(desired_center)
+                desired_center = self.sub_right_lane.get_last_msg("/detect/lane").data
+
+            # lane detector calculated cmd_vel (minwoo logic)
+            lane_detector_cmd_vel = self.sub_lane_detector_cmd_vel.get_last_msg("/lane_detector/cmd_vel")
+            self.pub_cmd_vel.publish("/cmd_vel", lane_detector_cmd_vel)
             # pid lane control
-            
+            # self.pid_control(desired_center)
             return 'lane_control'
         else:
             Logger.loginfo("start mission control")

@@ -9,6 +9,7 @@
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from ma_ah_flexbe_states.lane_control import ControlLaneState
+from ma_ah_flexbe_states.left_state import LeftSignState
 from ma_ah_flexbe_states.stop_bar_state import StopBarState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
@@ -45,11 +46,13 @@ class mission5stopbarSM(Behavior):
 
 	def create(self):
 		left = "left"
-		stop = "stop"
+		right = "right"
+		middle = "middle"
 		# x:30 y:638, x:130 y:638
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.left = left
-		_state_machine.userdata.stop = stop
+		_state_machine.userdata.right = right
+		_state_machine.userdata.middle = middle
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -58,18 +61,31 @@ class mission5stopbarSM(Behavior):
 
 
 		with _state_machine:
-			# x:256 y:77
-			OperatableStateMachine.add('stop_bar_state',
-										StopBarState(),
-										transitions={'proceed': 'stop_bar_state', 'done': 'lane_control'},
-										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
-
-			# x:235 y:229
+			# x:303 y:44
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
-										transitions={'lane_control': 'stop_bar_state', 'mission_control': 'finished'},
+										transitions={'lane_control': 'lane_control', 'mission_control': 'left sign state'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'middle'})
+
+			# x:272 y:415
+			OperatableStateMachine.add('lane_control_2',
+										ControlLaneState(),
+										transitions={'lane_control': 'lane_control_2', 'mission_control': 'left sign state'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
 										remapping={'lane_info': 'left'})
+
+			# x:173 y:251
+			OperatableStateMachine.add('left sign state',
+										LeftSignState(),
+										transitions={'turn_left': 'lane_control_2', 'proceed': 'lane_control', 'stop': 'stop bar'},
+										autonomy={'turn_left': Autonomy.Off, 'proceed': Autonomy.Off, 'stop': Autonomy.Off})
+
+			# x:602 y:196
+			OperatableStateMachine.add('stop bar',
+										StopBarState(),
+										transitions={'proceed': 'lane_control', 'done': 'finished'},
+										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
 
 
 		return _state_machine

@@ -29,7 +29,7 @@ class TrafficSign(EventState):
 		# The constructor is called when building the state machine, not when actually starting the behavior.
 		# Thus, we cannot save the starting time now and will do so later.
 
-		self._sub = ProxySubscriberCached({"/traffic_sign": String})
+		# self._sub = ProxySubscriberCached({"/traffic_sign": String})
 		self._filtered_detection_sub = ProxySubscriberCached({"/filtered_detection": String})
 		
 		#self._sign = 'lane_control'

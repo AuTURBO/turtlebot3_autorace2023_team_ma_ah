@@ -46,8 +46,14 @@ class first_testSM(Behavior):
 
 
 	def create(self):
+		left = "left"
+		right = "right"
+		middle = "middle"
 		# x:30 y:365, x:670 y:106
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		_state_machine.userdata.left = left
+		_state_machine.userdata.right = right
+		_state_machine.userdata.middle = middle
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]

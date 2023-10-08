@@ -88,36 +88,56 @@ class ControlLaneState(EventState):
 
     # Minwoo's controller 
     def simple_controller(self, left_lane_data, right_lane_data, direction_sign_data):
-        result = None
-        side_margin = 240
-
+        target = 320
+        side_margin = 220
+        Logger.loginfo("Simple controller user_info: {}".format(direction_sign_data))
+        Logger.loginfo("Left lane:  {}".format(left_lane_data))
+        Logger.loginfo("Right lane: {}".format(right_lane_data))
+        no_line_margin = 280
         if direction_sign_data == "left": # Set Mode (left lane following)
-            # print("See Left Lane!!!")
-            result = left_lane_data + side_margin
+            Logger.loginfo("See Left lane!!")
+            #target = left_lane_data + side_margin
+
+            if (abs(left_lane_data - 0.0) <= 0.01) or left_lane_data == 1000 : # if exist only left lane
+                Logger.loginfo("Error except!!")
+                target = no_line_margin
+            elif left_lane_data != 1000 : # if No exist only left lane
+                target = left_lane_data + side_margin
 
         elif direction_sign_data == "right": # Set Mode Only (right lane following)
-            # print("See Right Lane!!!")
-            result = right_lane_data - side_margin
+            Logger.loginfo("See Right lane!!")
+            Logger.loginfo("Lane Data type: {}".format(type(right_lane_data)))
+
+            Logger.loginfo("ABS Error: {}".format(abs(right_lane_data - 0.0)))    
+
+            if (abs(right_lane_data - 0.0) <= 0.01) or right_lane_data == 1000 : # if No exist only left lane
+                Logger.loginfo("Error except!!")
+                target = 640 - no_line_margin
+            elif right_lane_data != 1000: # if exist only left lane
+                target = right_lane_data - side_margin
 
 
         # 1000 is represent None value 
 
         elif direction_sign_data == "middle": # Set Mode only (two lane following)
+            Logger.loginfo("See Middle lane!!")
             if left_lane_data != 1000 and right_lane_data != 1000: # if exist two lane
-                print("ALL!!!")
-                result = left_lane_data + ((right_lane_data - left_lane_data) // 2)
+                Logger.loginfo("Autonomous ALL!!!")
+                target = left_lane_data + ((right_lane_data - left_lane_data) // 2)
             elif left_lane_data != 1000 and right_lane_data == 1000: # if exist only left lane
-                print("See Left Lane!!!")
-                result = left_lane_data + side_margin
+                Logger.loginfo("Autonomous See Left Lane!!!")
+                target = left_lane_data + side_margin
             elif left_lane_data == 1000 and right_lane_data != 1000: # if exist only right lane
-                print("See Right Lane!!!")
-                result = right_lane_data - side_margin
+                Logger.loginfo("Autonomous See Right Lane!!!!!")
+                target = right_lane_data - side_margin
             elif left_lane_data == 1000 and right_lane_data == 1000: # if don't exist lane
-                result = 0
+                target = 0
 
-        angle = 320 - result
-        print(f"target: {result}")
-        angle = self.map(angle, 100, -100, 0.5, -0.5) # 0.5
+        angle = 320 - target
+        Logger.loginfo("target: {}".format(target))
+        Logger.loginfo("Angle: {}".format(angle))
+        print(f"target: {target}")
+        angle = self.map(angle, 100, -100, 1.5, -1.5) # 0.5
         print(f"angle: {angle}")
         return float(angle)
 
@@ -135,7 +155,7 @@ class ControlLaneState(EventState):
             angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
 
             cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = 0.1 # 0.1
+            cmd_vel_msg.linear.x = 0.15 # 0.1
             cmd_vel_msg.angular.z = angle
             self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
 

@@ -137,15 +137,24 @@ class PreProcessor:
     # 차선이 있을것으로 추정되는 이미지 하단부분의 히스토그램을 이용해 초기 탐색점을 구한다.
     # =============================================
 
-    def hist_line_peak(self, img):
+    def hist_line_peak(self, img, lane_type):
         # print(img.shape)
         histogram = np.sum(img[460:, :], axis=0)  # X축 히스토그램 계산
+
+        right_start_point = 120
+        if lane_type == "left":
+            result = np.argmax(histogram[:480])
+            #print(f"left_base :{left_base}")
+        elif lane_type == "right":
+            result = right_start_point + np.argmax(histogram[right_start_point :])
+
+        # histogram = np.sum(img[460:, :], axis=0)  # X축 히스토그램 계산
         # print(histogram.shape)
-        midpoint = np.int(histogram.shape[0] / 2)  # 중앙점 계산
+        # midpoint = np.int(histogram.shape[0] / 2)  # 중앙점 계산
         # print(f"midpoint: {midpoint}")
         hist_find_margin = 60
 
-        result = np.argmax(histogram)
+        # result = np.argmax(histogram)
         # left_hist_result = np.argmax(
         #     histogram[: midpoint - hist_find_margin]
         # )  # 중앙점을 기준으로 히스토그램을 계산해 왼쪽 라인 시작점 구함
@@ -174,10 +183,10 @@ class PreProcessor:
         line_detect_fail_count_mid = 0  # 차선 검출 실패 카운트 0으로 초기화 (중간)
         
         if lane_type == "left":
-            left_base = self.hist_line_peak(img)  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
+            left_base = self.hist_line_peak(img, "left")  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
             #print(f"left_base :{left_base}")
         elif lane_type == "right":
-            right_base = self.hist_line_peak(img)
+            right_base = self.hist_line_peak(img, "right")
             #print(f"right_base :{right_base}")
 
         # Sliding Window
@@ -193,9 +202,9 @@ class PreProcessor:
         self.left_window_n = 0
         self.right_window_n = 0
         self.mid_window_n = 0
-        self.lane_count_threshold = 6
+        self.lane_count_threshold = 3
 
-        self.lane_num = 15
+        self.lane_num = 25
 
         msk = img.copy()  # 차선검출 결과를 디스플레이 하기 위한 이미지 복사
         msk = cv2.cvtColor(msk, cv2.COLOR_GRAY2BGR)  # 컬러 표시를 위해 색공간을 Gray에서 BGR로 변환

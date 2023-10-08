@@ -102,14 +102,14 @@ class Lane_detector:
         none_value = 1000
     
         if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
-            left_line_msg.data = lx[0]
-            right_line_msg.data = rx[0]
+            left_line_msg.data = lx[1]
+            right_line_msg.data = rx[1]
         elif lx != None and len(lx) > 3:
-            left_line_msg.data = lx[0]
+            left_line_msg.data = lx[1]
             right_line_msg.data = none_value
         elif rx != None and len(rx) > 3:
             left_line_msg.data = none_value
-            right_line_msg.data = rx[0]
+            right_line_msg.data = rx[1]
 
         self.left_lane_publisher.publish(left_line_msg)
         self.right_lane_publisher.publish(right_line_msg)
@@ -156,8 +156,8 @@ class Lane_detector:
             left_msk, lx, ly = pre_module.sliding_window(left_lane_gray, "left")
             right_msk, rx, ry = pre_module.sliding_window(right_lane_gray, "right")
 
-            #cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
-            #cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
+            cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
+            cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
 
             msk = cv2.add(left_msk, right_msk)
             # filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
@@ -214,7 +214,7 @@ class Lane_detector:
         lab_low = 190
         lab_high = 255
         
-        hls_lower_white = (0, 240, 0)
+        hls_lower_white = (0, 230, 0)
         hls_upper_white = (255, 255, 230)
 
         hls_img = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
@@ -228,7 +228,7 @@ class Lane_detector:
         # cv2.imshow('hls_result', hls_result)
 
         lab_lower_yellow= (90, 0, 140)
-        lab_upper_yellow = (255, 255, 255)
+        lab_upper_yellow = (230, 255, 255)
 
         lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 

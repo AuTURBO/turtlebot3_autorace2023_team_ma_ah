@@ -24,8 +24,6 @@ class ControlLaneState(EventState):
         self._MAX_VEL = 0.1
         
         self.sub_middle_lane = ProxySubscriberCached({"/detect/lane": Float64})
-        self.sub_left_lane = ProxySubscriberCached({"/detect/lane": Float64})
-        self.sub_right_lane = ProxySubscriberCached({"/detect/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
         self.sub_traffic_sign = ProxySubscriberCached({"/traffic_sign": String})
@@ -92,23 +90,24 @@ class ControlLaneState(EventState):
             
 
     def execute(self, userdata):
-        if True:
+        if self.sub_traffic_sign.has_msg("/lane_detector/cmd_vel"):
+            Logger.loginfo("lane control!")
             # Logger.loginfo("Traffic sign size: {}".format(self.sub_traffic_sign_size.get_last_msg("/traffic_sign_size").data))
-            if userdata.lane_info == 'left':
-                desired_center = self.sub_middle_lane.get_last_msg("/detect/lane").data
-            elif userdata.lane_info == 'right':
-                desired_center = self.sub_left_lane.get_last_msg("/detect/lane").data
-            else:
-                desired_center = self.sub_right_lane.get_last_msg("/detect/lane").data
+            # if userdata.lane_info == 'left':
+            #     desired_center = self.sub_middle_lane.get_last_msg("/detect/lane").data
+            # elif userdata.lane_info == 'right':
+            #     desired_center = self.sub_left_lane.get_last_msg("/detect/lane").data
+            # else:
+            #     desired_center = self.sub_right_lane.get_last_msg("/detect/lane").data
 
             # lane detector calculated cmd_vel (minwoo logic)
             lane_detector_cmd_vel = self.sub_lane_detector_cmd_vel.get_last_msg("/lane_detector/cmd_vel")
-            #self.pub_cmd_vel.publish("/cmd_vel", lane_detector_cmd_vel)
+            self.pub_cmd_vel.publish("/cmd_vel", lane_detector_cmd_vel)
             # pid lane control
             # self.pid_control(desired_center)
             return 'lane_control'
         else:
-            Logger.loginfo("start mission control")
+            Logger.loginfo("No message")
             return 'mission_control'
         
 

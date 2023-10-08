@@ -33,14 +33,28 @@ class TrafficLightState(EventState):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
-        self.current_traffic_light = elf._sub.has_msg("/traffic_light")
+        if self._sub.has_msg("/traffic_light"):
+            
+            self.current_traffic_light = self._sub.get_last_msg("/traffic_light").data
+            print(self.current_traffic_light)
 
-        if self.current_traffic_light == "green":
-            Logger.loginfo("green traffic light")
-            return 'done'
+            if self.current_traffic_light == 'green':
+                Logger.loginfo("green traffic light")
+                return 'done'
+            
+            elif self.current_traffic_light == 'red':
+                Logger.loginfo("red traffic light")
+                return 'proceed'
+            elif self.current_traffic_light == 'yellow':
+                Logger.loginfo("yellow traffic light")
+                return 'proceed'
+            else:
+                Logger.loginfo("No Traffic Light : ")
+                return 'proceed'
         else:
-            Logger.loginfo("Current Traffic Light : ", )
+            Logger.loginfo("No Message : ")
             return 'proceed'
+
         
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

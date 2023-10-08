@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="sino_fsm_Mission1_2">
+
+	<executable package_path="ma_ah_flexbe_behaviors.sino_fsm_mission1_2_sm" class="sino_fsm_Mission1_2SM" />
+	<tagstring></tagstring>
+	<author>sion</author>
+	<date>Sun Oct 08 2023</date>
+	<description>
+		hello
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

@@ -59,6 +59,19 @@ class TrafficSign(EventState):
 			elif self._sign == "['tunnel']":
 				print("tunnel mode")
 				return 'tunnel_info'
+			elif self._sign == "['boom_barrier']":
+				print("boom_barrier mode")
+				return 'boom_barrier_info'
+			elif self._sign == "['left']":
+				print("left mode")
+				return 'left_info'
+			elif self._sign == "['right']":
+				print("right mode")
+				return 'right_info'
+			elif self._sign == "['no_entry']":
+				print("no_entry mode")
+				return 'no_entry_info'
+
 		# else:
 		# 	Logger.loginfo("no traffic sign")
 		# 	return 'lane_control'

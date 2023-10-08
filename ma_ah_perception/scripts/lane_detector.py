@@ -53,7 +53,7 @@ class Lane_detector:
 
     def simple_controller(self, lx, ly, rx, ry):
         target = 320
-        side_margin = 220
+        side_margin = 200
 
         if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
             print("ALL!!!")
@@ -127,10 +127,10 @@ class Lane_detector:
         # print(f"angle: {angle}")
 
         cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = 0.5 # 0.1
+        cmd_vel_msg.linear.x = 0.05 # 0.1
         cmd_vel_msg.angular.z = angle
 
-        #self.cmd_vel_publisher.publish(cmd_vel_msg)
+        self.cmd_vel_publisher.publish(cmd_vel_msg)
 
         center_line_msg = Float64()
         center_line_msg.data = target
@@ -249,7 +249,7 @@ if __name__ == '__main__':
     rospy.init_node("lane_detector")
     
     image_topic = "/camera/image/compressed"
-    cmd_vel_topic = "/cmd_vel" # /lane_detector/cmd_vel"
+    cmd_vel_topic = "/lane_detector/cmd_vel" #"/cmd_vel"
     center_lane_topic = "/detect/lane"
     processed_img_topic = "/processed/img"
 

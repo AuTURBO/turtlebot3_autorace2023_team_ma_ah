@@ -16,18 +16,18 @@ from ma_ah_flexbe_states.traffic_light_state import TrafficLightState
 
 
 '''
-Created on @author: sion jeon
-@author: sion jeon
+Created on Sun Oct 08 2023
+@author: sion
 '''
-class sion_style_fsmSM(Behavior):
+class sion_traffic_light_fsmSM(Behavior):
 	'''
-	hi hello
+	hello
 	'''
 
 
 	def __init__(self):
-		super(sion_style_fsmSM, self).__init__()
-		self.name = 'sion_style_fsm'
+		super(sion_traffic_light_fsmSM, self).__init__()
+		self.name = 'sion_traffic_light_fsm'
 
 		# parameters of this behavior
 
@@ -53,10 +53,10 @@ class sion_style_fsmSM(Behavior):
 
 
 		with _state_machine:
-			# x:87 y:44
-			OperatableStateMachine.add('Traffic Light Mode',
+			# x:142 y:79
+			OperatableStateMachine.add('trafficLight',
 										TrafficLightState(),
-										transitions={'proceed': 'Traffic Light Mode', 'done': 'finished'},
+										transitions={'proceed': 'trafficLight', 'done': 'finished'},
 										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
 
 

@@ -3,12 +3,17 @@
 
 import rospy
 import numpy as np
-from std_msgs.msg import Float64
-from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
+
+import math
+
 from std_msgs.msg import String
+from std_msgs.msg import Float64
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
 
 class MovingControlState(EventState):
     '''
@@ -21,7 +26,17 @@ class MovingControlState(EventState):
     '''
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(MovingControlState, self).__init__(outcomes=['success', 'fail'], input_keys=['moving_info'])
+        super(MovingControlState, self).__init__(outcomes=['procced', 'done'], input_keys=['moving_info'])
+
+        self.sub_odom = ProxySubscriberCached({"/odom": Odometry})
+        self.sub_scan = ProxySubscriberCached({"/scan": LaserScan})
+        self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
+
+        self.steer_angle = Twist()
+        self.current_pos = 0
+        self.current_theta = 0
+        self.lastError = 0
+        
 
         # Initialize class variables or state parameters here if needed.
         self.control_dict = {
@@ -38,38 +53,119 @@ class MovingControlState(EventState):
         }
         self._success = False
         self._fail = False
+    def odom_update(self):
+        # odometry = 
+        odom_msg = self.sub_odom.get_last_msg("/odom")
+        # 현재 robot의 yaw 값을 current_theta에 저장
+        print(odom_msg)
+        quaternion = (odom_msg.pose.pose.orientation.x, odom_msg.pose.pose.orientation.y, odom_msg.pose.pose.orientation.z, odom_msg.pose.pose.orientation.w)
+        self.current_theta = self.euler_from_quaternion(quaternion)
 
+        if (self.current_theta - self.last_current_theta) < -math.pi:
+            self.current_theta = 2. * math.pi + self.current_theta
+            self.last_current_theta = math.pi
+        elif (self.current_theta - self.last_current_theta) > math.pi:
+            self.current_theta = -2. * math.pi + self.current_theta
+            self.last_current_theta = -math.pi
+        else:
+            self.last_current_theta = self.current_theta
 
-    # 일정거리 직진
-    def go_straight(self):
-        Logger.loginfo("MovingControlState : go_straight")
+        # 현재 robot의 위치를 current_pos에 저장
+        self.current_pos_x = odom_msg.pose.pose.position.x
+        self.current_pos_y = odom_msg.pose.pose.position.y
+        self.current_pos = math.sqrt(self.current_pos_x**2 + self.current_pos_y**2)
+
+    def drive(self, linear_velocity, angular_velocity):
+        self.steer_angle.linear.x = linear_velocity
+        self.steer_angle.angular.z = angular_velocity
+        self.pub_cmd_vel.publish("/cmd_vel", self.steer_angle)
+    
+
+    def left_turn(self):
+        Kp = 1.5
+        Ki = 0.0
+        Kd = 0.0
+        self.lastError = 0
+        current_distance = 0
+
+        current_distance = self.current_theta 
+        error = current_distance - 1.57
+        control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
+        self.lastError = error
+
+        print("left_turn", self.current_theta)
+
+        if abs(error) < 0.05:
+            self.drive(0.0, -control)
+            return True
+            
+    
+    def right_turn(self):
+        Kp = 1.5
+        Ki = 0.0
+        Kd = 0.0
+        self.lastError = 0
+        current_distance = 0
+
+        print("right_turn")
+        while 1:
+            current_distance = self.current_theta 
+            error = current_distance + 1.57
+            control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
+            self.lastError = error
+            if abs(error) < 0.05:
+                break
+            self.drive(0.0, -control)
+        return True
+    def stop(self):
+        print("stop")
+        self.drive(0.0, 0.0)
         return True
     
-    # 정지
-    def stop(self):
-        Logger.loginfo("MovingControlState : stop")
+    def go_straight(self):
+        Kp = 1.5
+        Ki = 0.0
+        Kd = 0.0
+        self.lastError = 0
+        current_distance = 0
+
+        print("go_straight")
+        while 1:
+            current_distance = self.current_pos 
+            error = current_distance - 0.2
+            control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
+            self.lastError = error
+            if abs(error) < 0.05:
+                break
+            self.drive(-control, 0.0)
         return True
-    # 좌회전
-    def left_turn(self):
-        Logger.loginfo("MovingControlState : left_turn")
-        return True
-    # 우회전
-    def right_turn(self):
-        Logger.loginfo("MovingControlState : right_turn")
-        return True
-    # 후진
+    
     def back(self):
-        Logger.loginfo("MovingControlState : back")
+        Kp = 1.5
+        Ki = 0.0
+        Kd = 0.0
+        self.lastError = 0
+        current_distance = 0
+
+        print("back")
+        while 1:
+            current_distance = self.current_pos 
+            error = current_distance + 0.2
+            control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
+            self.lastError = error
+            if abs(error) < 0.05:
+                break
+            self.drive(-control, 0.0)
         return True
     
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
-        if self._success :
-            return 'success'
-        elif self._fail :
-            return 'fail'
+        if self.control_dict[self.cmd_moving]() :
+            return 'done'
+        else :
+            return 'procced'
                
  
         
@@ -77,17 +173,20 @@ class MovingControlState(EventState):
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.
         # It is typically used to start actions related to this state.
-        self._success = False
-        self._fail = False
+        # self._success = False
+        # self._fail = False
 
-        self.cmd_moving = userdata.moving_info
-        # 3항 연산자
-        if self.control_dict[self.cmd_moving]() : 
-            self._success = True
-        else :
-            self._fail = True
+        # self.cmd_moving = userdata.moving_info
+        # # 3항 연산자
+        # if self.control_dict[self.cmd_moving]() : 
+        #     print("succesadasdasdasdss")
+        #     self._success = True
+        # else :
+        #     print("faiasdasdasdasdasl")
+        #     self._fail = True
 
-        Logger.loginfo('Entered state moving')
+        # Logger.loginfo('Entered state moving')
+        pass
 
     # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.
 

@@ -166,6 +166,7 @@ catkin_install_python(PROGRAMS
   scripts/lane_detector.py
   scripts/img_converter.py
   scripts/yolo_filter.py
+  scripts/traffic_light_classifier.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

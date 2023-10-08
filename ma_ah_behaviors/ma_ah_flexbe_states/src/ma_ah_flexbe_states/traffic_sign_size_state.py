@@ -27,19 +27,21 @@ class TrafficLightState(EventState):
         super(TrafficLightState, self).__init__(outcomes=['proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
-        self._sub = ProxySubscriberCached({"/traffic_light": String})
+        self._sub = ProxySubscriberCached({"/traffic_color": String})
         self.traffic_sign_size = 60
 
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
-        if self._sub.has_msg("/traffic_light") == "green":
-            Logger.loginfo("green traffic light")
-            return 'done'
-        else:
-            Logger.loginfo("red or yellow traffic light waiting..")
-            return 'proceed'
+        if self._sub.has_msg("/traffic_color"):
+            traffic_color = self._sub.get_last_msg("/traffic_color").data
+            if traffic_color == "green":
+                Logger.loginfo("green traffic light")
+                return 'done'
+            else:
+                Logger.loginfo("red or yellow traffic light waiting..")
+                return 'proceed'
         
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

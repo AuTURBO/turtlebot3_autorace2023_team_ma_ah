@@ -8,8 +8,8 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from ma_ah_flexbe_states.lane_control import ControlLaneState
-from ma_ah_flexbe_states.traffic_sign_size_state import TrafficLightState
+from ma_ah_flexbe_behaviors.mission_1_traffic_light_sm import mission1trafficlightSM
+from ma_ah_flexbe_behaviors.mission_2_cross_line__sm import mission2crosslineSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -17,22 +17,24 @@ from ma_ah_flexbe_states.traffic_sign_size_state import TrafficLightState
 
 
 '''
-Created on Mon Oct 02 2023
-@author: ggh-png
+Created on Mon Oct 09 2023
+@author: sion jeon
 '''
-class mission1trafficlightSM(Behavior):
+class first_testSM(Behavior):
 	'''
-	ma ah mission 1 traffic light
+	hi_hellolo
 	'''
 
 
 	def __init__(self):
-		super(mission1trafficlightSM, self).__init__()
-		self.name = 'mission 1 traffic light'
+		super(first_testSM, self).__init__()
+		self.name = 'first_test'
 
 		# parameters of this behavior
 
 		# references to used behaviors
+		self.add_behavior(mission1trafficlightSM, 'mission 1 traffic light')
+		self.add_behavior(mission2crosslineSM, 'mission 2 cross line ')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -44,14 +46,8 @@ class mission1trafficlightSM(Behavior):
 
 
 	def create(self):
-		middle = "middle"
-		left = "left"
-		right = "right"
-		# x:30 y:365, x:130 y:365
+		# x:30 y:365, x:670 y:106
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
-		_state_machine.userdata.middle = middle
-		_state_machine.userdata.left = left
-		_state_machine.userdata.right = right
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -60,18 +56,17 @@ class mission1trafficlightSM(Behavior):
 
 
 		with _state_machine:
-			# x:125 y:60
-			OperatableStateMachine.add('traffic_light_state',
-										TrafficLightState(),
-										transitions={'proceed': 'traffic_light_state', 'done': 'control_lane'},
-										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
+			# x:145 y:69
+			OperatableStateMachine.add('mission 1 traffic light',
+										self.use_behavior(mission1trafficlightSM, 'mission 1 traffic light'),
+										transitions={'finished': 'mission 2 cross line ', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
-			# x:292 y:183
-			OperatableStateMachine.add('control_lane',
-										ControlLaneState(),
-										transitions={'lane_control': 'control_lane', 'mission_control': 'finished'},
-										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'middle'})
+			# x:358 y:210
+			OperatableStateMachine.add('mission 2 cross line ',
+										self.use_behavior(mission2crosslineSM, 'mission 2 cross line '),
+										transitions={'finished': 'finished', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
 
 		return _state_machine

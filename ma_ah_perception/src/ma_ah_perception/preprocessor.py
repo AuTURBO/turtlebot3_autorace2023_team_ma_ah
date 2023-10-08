@@ -97,16 +97,8 @@ class PreProcessor:
         # cv2.circle(img, (int(dst[2][0]), int(dst[2][1])), 1, (0,0 ,255), 10)
         # cv2.circle(img, (int(dst[3][0]), int(dst[3][1])), 1, (255,255 ,0), 10)
 
-        roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
-
-<<<<<<< HEAD
-        #cv2.imshow("roi", roi)
-=======
-        # cv2.imshow("roi", roi)
->>>>>>> origin/0542/obstacle_behavior
-
         warped_img = cv2.warpPerspective(
-            roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR
+            img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR
         )  # 이미지 워핑으로 Bird Eye View 생성
 
         return warped_img
@@ -174,7 +166,6 @@ class PreProcessor:
     # =============================================
 
     def sliding_window(self, img, lane_type):
-        print(img.shape)
         prev_detect_flag_left = False  # 직전 차선 검출 성공 플래그 False로 세팅 (왼쪽)
         prev_detect_flag_right = False  # 직전 차선 검출 성공 플래그 False로 세팅 (오른쪽)
         line_detect_fail_count_left = 0  # 차선 검출 실패 카운트 0으로 초기화 (왼쪽)
@@ -204,7 +195,7 @@ class PreProcessor:
         self.mid_window_n = 0
         self.lane_count_threshold = 6
 
-        self.lane_num = 10
+        self.lane_num = 15
 
         msk = img.copy()  # 차선검출 결과를 디스플레이 하기 위한 이미지 복사
         msk = cv2.cvtColor(msk, cv2.COLOR_GRAY2BGR)  # 컬러 표시를 위해 색공간을 Gray에서 BGR로 변환

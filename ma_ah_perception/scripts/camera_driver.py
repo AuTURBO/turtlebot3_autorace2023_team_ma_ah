@@ -18,7 +18,7 @@ def camera_publisher():
     rospy.init_node('camera_publisher', anonymous=True)
 
     # Create a publisher on the 'camera_image/compressed' topic for compressed images
-    pub = rospy.Publisher('/camera/image/compressed', CompressedImage, queue_size=10)
+    pub = rospy.Publisher('/camera/image/compressed', CompressedImage, queue_size=2)
 
     # Set the video source to the default camera.
     #cap = cv2.VideoCapture(0)

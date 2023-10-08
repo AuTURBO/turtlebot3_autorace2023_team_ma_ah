@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="first_test">
+
+	<executable package_path="ma_ah_flexbe_behaviors.first_test_sm" class="first_testSM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>Mon Oct 09 2023</date>
+	<description>
+		hi_hellolo
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="mission 1 traffic light" />
+	<contains name="mission 2 cross line " />
+
+	<!-- Available Parameters -->
+
+</behavior>

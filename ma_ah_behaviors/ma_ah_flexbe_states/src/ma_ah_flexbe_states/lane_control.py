@@ -126,9 +126,7 @@ class ControlLaneState(EventState):
 
             
     def execute(self, userdata):
-
-        Logger.loginfo("userdata.lane_info: {}".format(userdata.lane_info))
-
+        
         # lane control logic
         if self.sub_left_lane.has_msg("/detect/left/lane") and self.sub_right_lane.has_msg("/detect/right/lane"):
             left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
@@ -145,6 +143,8 @@ class ControlLaneState(EventState):
         if self._sub.has_msg("/filtered/detection"):
             self._traffic_sign = self._filtered_detection_sub.get_last_msg("/filtered/detection").data
             Logger.loginfo("Traffic_sign: {}".format(self._traffic_sign))
+            Logger.loginfo("-------")
+            Logger.loginfo("userdata.lane_info: {}".format(userdata.lane_info))
 
             # recursion lane control
             if self._traffic_sign == "[]":

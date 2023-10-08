@@ -22,7 +22,7 @@ class ObstacleAvoidState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(ObstacleAvoidState, self).__init__(outcomes=['obstacle', 'done'])
+        super(ObstacleAvoidState, self).__init__(outcomes=['detect', 'done'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/obstacle_detection": String})

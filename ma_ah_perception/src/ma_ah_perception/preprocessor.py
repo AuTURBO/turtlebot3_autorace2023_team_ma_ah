@@ -87,10 +87,10 @@ class PreProcessor:
 
         # src, dst 시각화(디버깅 용)
 
-        cv2.circle(img, (int(src[0][0]), int(src[0][1])), 1, (255, 0, 0), 10)
-        cv2.circle(img, (int(src[1][0]), int(src[1][1])), 1, (0, 255, 0), 10)
-        cv2.circle(img, (int(src[2][0]), int(src[2][1])), 1, (0, 0, 255), 10)
-        cv2.circle(img, (int(src[3][0]), int(src[3][1])), 1, (255, 255, 0), 10)
+        # cv2.circle(img, (int(src[0][0]), int(src[0][1])), 1, (255, 0, 0), 10)
+        # cv2.circle(img, (int(src[1][0]), int(src[1][1])), 1, (0, 255, 0), 10)
+        # cv2.circle(img, (int(src[2][0]), int(src[2][1])), 1, (0, 0, 255), 10)
+        # cv2.circle(img, (int(src[3][0]), int(src[3][1])), 1, (255, 255, 0), 10)
 
         # cv2.circle(img, (int(dst[0][0]), int(dst[0][1])), 1, (255,0 ,0), 10)
         # cv2.circle(img, (int(dst[1][0]), int(dst[1][1])), 1, (0,255 ,0), 10)
@@ -99,7 +99,7 @@ class PreProcessor:
 
         roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
 
-        cv2.imshow("roi", roi)
+        # cv2.imshow("roi", roi)
 
         warped_img = cv2.warpPerspective(
             roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR

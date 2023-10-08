@@ -32,7 +32,7 @@ class Lane_detector:
         self.red = (0, 0, 255)
 
         self.img_subscriber = rospy.Subscriber(img_topic, CompressedImage, self.img_cb)
-        self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
+        # self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
         self.cener_line_publisher = rospy.Publisher(center_lane_topic, Float64, queue_size=10)
 
         self.processed_img_publisher = rospy.Publisher(processed_img_topic, Image, queue_size=10)
@@ -127,6 +127,8 @@ class Lane_detector:
         left_lane_gray = cv2.cvtColor(left_lane_img, cv2.COLOR_BGR2GRAY)
         right_lane_gray = cv2.cvtColor(right_lane_img, cv2.COLOR_BGR2GRAY)
 
+        left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "otsu", window_name="otsu", show=True)
+
         left_msk, lx, ly = pre_module.sliding_window(left_lane_gray, "left")
         right_msk, rx, ry = pre_module.sliding_window(right_lane_gray, "right")
 
@@ -147,9 +149,9 @@ class Lane_detector:
         # angle = angle * 0.5
         # print(f"angle: {angle}")
 
-        cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = 0.8 # 0.1
-        cmd_vel_msg.angular.z = angle
+        # cmd_vel_msg = Twist()
+        # cmd_vel_msg.linear.x = 0.8 # 0.1
+        # cmd_vel_msg.angular.z = angle
 
         #self.cmd_vel_publisher.publish(cmd_vel_msg)
 
@@ -276,8 +278,8 @@ if __name__ == '__main__':
     center_lane_topic = "/detect/lane"
     processed_img_topic = "/processed/img"
 
-    left_lane_topic = "/detect/left_lane"
-    right_lane_topic = "/detect/right_lane"
+    left_lane_topic = "/detect/left/lane"
+    right_lane_topic = "/detect/right/lane"
 
     # lane_detector = Lane_detector(image_topic, cmd_vel_topic)
     lane_detector = Lane_detector(image_topic, cmd_vel_topic, center_lane_topic, left_lane_topic, right_lane_topic, processed_img_topic)

@@ -153,7 +153,11 @@ class Lane_detector:
         # cmd_vel_msg.linear.x = 0.8 # 0.1
         # cmd_vel_msg.angular.z = angle
 
+<<<<<<< HEAD
         #self.cmd_vel_publisher.publish(cmd_vel_msg)
+=======
+        # self.cmd_vel_publisher.publish(cmd_vel_msg)
+>>>>>>> origin/0542/obstacle_behavior
 
         center_line_msg = Float64()
         center_line_msg.data = target

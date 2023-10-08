@@ -16,10 +16,10 @@ TebLocalPlannerROS:
   exact_arc_length: False  # Trajectory에서 정확한 호 길이 사용 여부
 
   # 로봇 관련 설정
-  max_vel_x: 0.1  # 로봇의 최대 전진 속도
-  max_vel_x_backwards: 0.1  # 로봇의 최대 후진 속도
+  max_vel_x: 0.4  # 로봇의 최대 전진 속도
+  max_vel_x_backwards: 0.4  # 로봇의 최대 후진 속도
   max_vel_y: 0.0  # 로봇의 최대 좌우 이동 속도
-  max_vel_theta: 0.3  # 로봇의 최대 각속도
+  max_vel_theta: 0.5  # 로봇의 최대 각속도
   acc_lim_x: 0.5  # 로봇의 전진 가속도 한계
   acc_lim_theta: 0.5  # 로봇의 회전 가속도 한계
   min_turning_radius: 0.0  # 회전 가능한 최소 반지름 (위치에 따라 회전하지 않을 수 있음)
@@ -30,7 +30,7 @@ TebLocalPlannerROS:
 
   # 목표 지점 허용 오차 설정
   xy_goal_tolerance: 0.2  # 목표 위치까지의 허용 오차 (미터)
-  yaw_goal_tolerance: 0.1  # 목표 방향까지의 허용 오차 (라디안)
+  yaw_goal_tolerance: 0.02  # 목표 방향까지의 허용 오차 (라디안)
   free_goal_vel: False  # 목표 지점 도달 시 로봇 속도 자유화 여부
   complete_global_plan: True  # 글로벌 경로 완료 여부
 
@@ -49,22 +49,22 @@ TebLocalPlannerROS:
   costmap_converter_rate: 5  # 코스트맵 변환 주파수 (Hz)
 
   # 경로 최적화 관련 설정
-  no_inner_iterations: 5  # 내부 최적화 반복 횟수
-  no_outer_iterations: 4  # 외부 최적화 반복 횟수
+  no_inner_iterations: 5  # 내부 최적화 반복 횟수 5
+  no_outer_iterations: 2  # 외부 최적화 반복 횟수 4
   optimization_activate: True  # 최적화 활성화 여부
   optimization_verbose: False  # 최적화 자세한 로그 출력 여부
   penalty_epsilon: 0.1  # 패널티 이파실론
   obstacle_cost_exponent: 4  # 장애물 코스트 지수
   weight_max_vel_x: 2  # 최대 전진 속도 가중치
-  weight_max_vel_theta: 1  # 최대 각속도 가중치
+  weight_max_vel_theta: 2  # 최대 각속도 가중치
   weight_acc_lim_x: 1  # 가속도 한계 가중치
   weight_acc_lim_theta: 1  # 회전 가속도 한계 가중치
-  weight_kinematics_nh: 1000  # 로봇 비-홀로노믹 경로 생성 가중치
+  weight_kinematics_nh: 1000  # 로봇 비-홀로노믹 경로 생성 가중치 1000
   weight_kinematics_forward_drive: 1  # 전진 운전 경로 생성 가중치
   weight_kinematics_turning_radius: 1  # 회전 반경 경로 생성 가중치
-  weight_optimaltime: 1  # 최적 시간 가중치 (0보다 커야 함)
-  weight_shortest_path: 0  # 최단 경로 가중치
-  weight_obstacle: 100  # 장애물 가중치
+  weight_optimaltime: 5  # 최적 시간 가중치 (0보다 커야 함) 1
+  weight_shortest_path: 5  # 최단 경로 가중치 0
+  weight_obstacle: 5  # 장애물 가중치 100
   weight_inflation: 0.2  # 장애물 팽창 가중치
   weight_dynamic_obstacle: 10  # 동적 장애물 가중치
   weight_dynamic_obstacle_inflation: 0.2  # 동적 장애물 팽창 가중치

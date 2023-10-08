@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, String
 
 from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 
-from std_msgs.msg import String
 
 import math
  
@@ -22,7 +21,7 @@ class ControlLaneState(EventState):
         super(ControlLaneState, self).__init__(outcomes=['lane_control', 'mission_control'], input_keys=['lane_info'])
         
         self.lastError = 0
-        self._MAX_VEL = 0.5
+        self._MAX_VEL = 0.1
         
         self.sub_middle_lane = ProxySubscriberCached({"/detect/middle/lane": Float64})
         self.sub_left_lane = ProxySubscriberCached({"/detect/left/lane": Float64})
@@ -33,7 +32,6 @@ class ControlLaneState(EventState):
         self._filtered_detection_sub = ProxySubscriberCached({"/filtered/detection": String})
 
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
-
         # pure pursuit control
         self.WB = 0.20
         self.Lf = 0.20
@@ -55,6 +53,7 @@ class ControlLaneState(EventState):
         twist = Twist()
         twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.06)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
+        
         # self
         # self.pub_cmd_vel.publish(twist)
         self.pub_cmd_vel.publish("/cmd_vel", twist)

@@ -8,8 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from ma_ah_flexbe_states.lane_control import ControlLaneState
-from ma_ah_flexbe_states.move_base import MoveBaseState
+from ma_ah_flexbe_states.moving_control_state import MovingControlState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -17,18 +16,18 @@ from ma_ah_flexbe_states.move_base import MoveBaseState
 
 
 '''
-Created on Fri Oct 06 2023
+Created on Sun Oct 08 2023
 @author: ggh-png
 '''
-class mission6tunnelSM(Behavior):
+class movingtestSM(Behavior):
 	'''
-	mission 6 tunnel
+	moving test
 	'''
 
 
 	def __init__(self):
-		super(mission6tunnelSM, self).__init__()
-		self.name = 'mission 6 tunnel'
+		super(movingtestSM, self).__init__()
+		self.name = 'moving test'
 
 		# parameters of this behavior
 
@@ -44,14 +43,16 @@ class mission6tunnelSM(Behavior):
 
 
 	def create(self):
-		initial_pose = [-2.5, 2.2, -1.57]
-		middle = "middle"
-		waypoint = [0.2, -1.75, 0]
-		# x:30 y:638, x:130 y:638
+		left = "left"
+		right = "right"
+		go = "go"
+		back = "back"
+		# x:30 y:365, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
-		_state_machine.userdata.initial_pose = initial_pose
-		_state_machine.userdata.middle = middle
-		_state_machine.userdata.waypoint = waypoint
+		_state_machine.userdata.left = left
+		_state_machine.userdata.right = right
+		_state_machine.userdata.go = go
+		_state_machine.userdata.back = back
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -60,19 +61,26 @@ class mission6tunnelSM(Behavior):
 
 
 		with _state_machine:
-			# x:519 y:100
-			OperatableStateMachine.add('goal_move_base',
-										MoveBaseState(),
-										transitions={'arrived': 'lane_control', 'failed': 'failed'},
-										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
-										remapping={'waypoint': 'waypoint'})
+			# x:495 y:89
+			OperatableStateMachine.add('go',
+										MovingControlState(),
+										transitions={'procced': 'go', 'done': 'right'},
+										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
+										remapping={'moving_info': 'go'})
 
-			# x:664 y:329
-			OperatableStateMachine.add('lane_control',
-										ControlLaneState(),
-										transitions={'lane_control': 'lane_control', 'mission_control': 'finished'},
-										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'middle'})
+			# x:406 y:204
+			OperatableStateMachine.add('go_2',
+										MovingControlState(),
+										transitions={'procced': 'go_2', 'done': 'finished'},
+										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
+										remapping={'moving_info': 'go'})
+
+			# x:87 y:198
+			OperatableStateMachine.add('right',
+										MovingControlState(),
+										transitions={'procced': 'right', 'done': 'go_2'},
+										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
+										remapping={'moving_info': 'right'})
 
 
 		return _state_machine

@@ -43,7 +43,7 @@ class Yolo_filter:
         bbox_size_filtered_detection_msg = [] # 1 frame
         for i in range(len(detection_msg.detections)):
             obj_bbox_size =  detection_msg.detections[i].bbox.size_x * detection_msg.detections[i].bbox.size_y
-            
+            #print(f"bbox size : {obj_bbox_size}")
             if obj_bbox_size > self.bbox_size_threshold:
                 bbox_size_filtered_detection_msg.append(detection_msg.detections[i])
 
@@ -64,6 +64,7 @@ class Yolo_filter:
                 obj_score = self.detection_buffer[i][j].results[0].score
 
                 if self.labels[obj_id] in self.labels:
+                    print(f"Detection : {self.labels[obj_id]}")
                     # print("Check!!")
                     count_list[obj_id] +=1
                 # print(self.labels[obj_id])
@@ -74,8 +75,8 @@ class Yolo_filter:
                 # print(strOut)
                 #'%-10s%-10s%-10s\n'
 
-                print(self.labels)
-                print(count_list)
+                #print(self.labels)
+                #print(count_list)
         idx = [i for i, x in enumerate(count_list) if x > self.count_threshold]
 
         result = str([self.labels[i] for i in idx])
@@ -84,7 +85,7 @@ class Yolo_filter:
 
         msg = String()
         msg.data = result
-
+        
         self.filted_detection_publisher.publish(msg)
 
 

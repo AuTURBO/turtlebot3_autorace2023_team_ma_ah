@@ -99,7 +99,11 @@ class PreProcessor:
 
         roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
 
+<<<<<<< HEAD
         #cv2.imshow("roi", roi)
+=======
+        # cv2.imshow("roi", roi)
+>>>>>>> origin/0542/obstacle_behavior
 
         warped_img = cv2.warpPerspective(
             roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR

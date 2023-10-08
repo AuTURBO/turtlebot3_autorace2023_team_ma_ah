@@ -10,7 +10,7 @@ from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
 
-class ObstacleDetectorState(EventState):
+class ObstacleAvoidState(EventState):
     '''
     Example for a state to detect obstacles.
     This state listens to a topic for obstacle information and reacts accordingly.
@@ -22,7 +22,7 @@ class ObstacleDetectorState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(ObstacleDetectorState, self).__init__(outcomes=['obstacle', 'done'])
+        super(ObstacleAvoidState, self).__init__(outcomes=['detect', 'done'])
 
         # Initialize class variables or state parameters here if needed.
         self._sub = ProxySubscriberCached({"/obstacle_detection": String})

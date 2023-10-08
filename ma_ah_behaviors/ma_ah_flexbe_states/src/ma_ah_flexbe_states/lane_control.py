@@ -103,7 +103,7 @@ class ControlLaneState(EventState):
 
             # lane detector calculated cmd_vel (minwoo logic)
             lane_detector_cmd_vel = self.sub_lane_detector_cmd_vel.get_last_msg("/lane_detector/cmd_vel")
-            self.pub_cmd_vel.publish("/cmd_vel", lane_detector_cmd_vel)
+            #self.pub_cmd_vel.publish("/cmd_vel", lane_detector_cmd_vel)
             # pid lane control
             # self.pid_control(desired_center)
             return 'lane_control'

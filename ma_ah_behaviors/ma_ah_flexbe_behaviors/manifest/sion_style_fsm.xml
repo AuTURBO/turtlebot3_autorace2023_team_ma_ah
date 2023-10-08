@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="sion_style_fsm">
+
+	<executable package_path="ma_ah_flexbe_behaviors.sion_style_fsm_sm" class="sion_style_fsmSM" />
+	<tagstring></tagstring>
+	<author>sion jeon</author>
+	<date>@author: sion jeon</date>
+	<description>
+		hi hello
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

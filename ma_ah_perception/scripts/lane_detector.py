@@ -35,7 +35,7 @@ class Lane_detector:
         self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
         self.cener_line_publisher = rospy.Publisher(center_lane_topic, Float64, queue_size=10)
 
-        self.processed_img_publisher = rospy.Publisher(processed_img_topic, Image, queue_size=10)
+        #self.processed_img_publisher = rospy.Publisher(processed_img_topic, Image, queue_size=10)
     
     def img_cb(self, img_msg):
         try:

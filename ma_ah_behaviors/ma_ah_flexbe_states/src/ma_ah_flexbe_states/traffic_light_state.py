@@ -11,8 +11,8 @@ from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
 from std_msgs.msg import Int32
 
-# 표지판의 크기를 판단하는 state
-class StopBarState(EventState):
+
+class TrafficLightState(EventState):
     '''
     Example for a state to detect parking spots.
     This state listens to a topic for parking information and reacts accordingly.
@@ -24,27 +24,23 @@ class StopBarState(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(StopBarState, self).__init__(outcomes=['proceed', 'done'])
+        super(TrafficLightState, self).__init__(outcomes=['proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
-        self._sub = ProxySubscriberCached({"/stop_bar": Float64})
-        self._pub = ProxyPublisher({"/cmd_vel": Twist})
-        self.traffic_sign_size = 60
+        self._sub = ProxySubscriberCached({"/traffic_light": String})
 
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
-        if self._sub.has_msg("/stop_bar") < 20:
-            Logger.loginfo("stop bar detected waiting..")
-            twist = Twist()
-            twist.linear.x = 0
-            twist.angular.z = 0
-            self._pub.publish("/cmd_vel", twist)
-            return 'proceed'
-        else:
-            Logger.loginfo("stop bar state done")
+        self.current_traffic_light = elf._sub.has_msg("/traffic_light")
+
+        if self.current_traffic_light == "green":
+            Logger.loginfo("green traffic light")
             return 'done'
+        else:
+            Logger.loginfo("Current Traffic Light : ", )
+            return 'proceed'
         
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.

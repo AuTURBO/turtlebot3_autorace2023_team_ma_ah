@@ -18,7 +18,7 @@
 
 		<param type="numeric" name="wait_time" default="1" label="wait_time" hint="Sets the wait_time">
 			<min value="0" />
-			<max value="3" />
+			<max value="10" />
 		</param>
 
 	</params>

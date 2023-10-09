@@ -107,14 +107,16 @@ class MoveBaseState(EventState):
 
 		#userdata.waypoint에서 가져온 각도 값을 사용하여 Quaternion 객체 qt를 생성 
 		#이 qt는 목표 지점의 방향을 나타냅니다.
-        qt = transformations.quaternion_from_euler(0, 0, userdata.waypoint[2])
+        # qt = transformations.quaternion_from_euler(0, 0, userdata.waypoint[2])
+
+        qt = [0, 0, userdata.waypoint[2], userdata.waypoint[3]]
 				
 		#goal 객체의 target_pose 속성을 설정하여 목표 위치와 방향을 지정
         goal.target_pose.pose = Pose(position = pt,
                                      orientation = Quaternion(*qt))
 				
 		#goal 객체의 header.frame_id 속성을 "odom"으로 설정
-        goal.target_pose.header.frame_id = "odom"
+        goal.target_pose.header.frame_id = "map"
         # goal.target_pose.header.stamp.secs = 5.0
 
         # Send the action goal for execution

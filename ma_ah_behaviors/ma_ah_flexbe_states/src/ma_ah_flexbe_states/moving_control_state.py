@@ -140,7 +140,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.05:
+        if math.fabs(error) < 0.01:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -168,7 +168,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.05:
+        if math.fabs(error) < 0.01:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -204,7 +204,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.05:
+        if math.fabs(error) < 0.01:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -233,7 +233,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.05:
+        if math.fabs(error) < 0.01:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False

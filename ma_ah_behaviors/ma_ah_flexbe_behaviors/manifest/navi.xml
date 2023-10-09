@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="navi">
+
+	<executable package_path="ma_ah_flexbe_behaviors.navi_sm" class="naviSM" />
+	<tagstring></tagstring>
+	<author>ggh</author>
+	<date>Mon Oct 09 2023</date>
+	<description>
+		naiv
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="mission 6 tunnel" />
+
+	<!-- Available Parameters -->
+
+</behavior>

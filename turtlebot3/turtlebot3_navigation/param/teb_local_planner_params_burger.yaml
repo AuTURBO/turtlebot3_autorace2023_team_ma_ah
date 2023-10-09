@@ -30,7 +30,7 @@ TebLocalPlannerROS:
 
   # 목표 지점 허용 오차 설정
   xy_goal_tolerance: 0.2  # 목표 위치까지의 허용 오차 (미터)
-  yaw_goal_tolerance: 0.02  # 목표 방향까지의 허용 오차 (라디안)
+  yaw_goal_tolerance: 0.1  # 목표 방향까지의 허용 오차 (라디안)
   free_goal_vel: False  # 목표 지점 도달 시 로봇 속도 자유화 여부
   complete_global_plan: True  # 글로벌 경로 완료 여부
 

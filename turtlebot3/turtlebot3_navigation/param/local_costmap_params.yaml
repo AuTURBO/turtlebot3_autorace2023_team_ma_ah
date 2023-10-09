@@ -8,6 +8,6 @@ local_costmap:
 
   static_map: false  # 정적 맵 사용 여부 (보통 정적 맵을 사용하지 않음)
   rolling_window: true  # 로링 윈도우 모드 활성화 여부 (로봇 주변의 영역만 코스트맵으로 관리)
-  width: 3  # 코스트맵 폭 (미터)
-  height: 3  # 코스트맵 높이 (미터)
+  width: 100  # 코스트맵 폭 (미터)
+  height: 100  # 코스트맵 높이 (미터)
   resolution: 0.05  # 코스트맵 해상도 (미터/픽셀)

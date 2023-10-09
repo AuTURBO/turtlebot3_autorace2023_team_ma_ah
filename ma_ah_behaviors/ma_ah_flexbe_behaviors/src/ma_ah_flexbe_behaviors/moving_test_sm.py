@@ -74,54 +74,12 @@ class movingtestSM(Behavior):
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'left', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
-			# x:193 y:376
-			OperatableStateMachine.add('go2',
-										MovingControlState(),
-										transitions={'procced': 'go2', 'done': 'right_180'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'go', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
-
-			# x:193 y:515
-			OperatableStateMachine.add('go2_2',
-										MovingControlState(),
-										transitions={'procced': 'go2_2', 'done': 'left_2'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'go', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
-
-			# x:391 y:640
-			OperatableStateMachine.add('go_2',
-										MovingControlState(),
-										transitions={'procced': 'go_2', 'done': 'right_2'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'go', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
-
-			# x:187 y:619
-			OperatableStateMachine.add('left_2',
-										MovingControlState(),
-										transitions={'procced': 'left_2', 'done': 'go_2'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'left', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
-
 			# x:193 y:299
 			OperatableStateMachine.add('right',
 										MovingControlState(),
-										transitions={'procced': 'right', 'done': 'go2'},
+										transitions={'procced': 'right', 'done': 'finished'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'right', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
-
-			# x:456 y:359
-			OperatableStateMachine.add('right_180',
-										MovingControlState(),
-										transitions={'procced': 'right_180', 'done': 'go2_2'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'right', 'target_distance': 'target_distance', 'target_theta': 'target_theta_1'})
-
-			# x:585 y:527
-			OperatableStateMachine.add('right_2',
-										MovingControlState(),
-										transitions={'procced': 'right_2', 'done': 'finished'},
-										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'left', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
 			# x:193 y:237
 			OperatableStateMachine.add('go',

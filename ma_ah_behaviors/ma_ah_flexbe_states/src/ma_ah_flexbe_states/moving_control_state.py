@@ -70,6 +70,8 @@ class MovingControlState(EventState):
 
         # control flag
         self.is_step_start = False
+        # 허용 오차 범위
+        self.error_range = 0.03
 
         # Initialize class variables or state parameters here if needed.
         self.control_dict = {
@@ -140,7 +142,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.01:
+        if math.fabs(error) < self.error_range:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -168,7 +170,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.01:
+        if math.fabs(error) < self.error_range:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -204,7 +206,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.01:
+        if math.fabs(error) < self.error_range:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -233,7 +235,7 @@ class MovingControlState(EventState):
         
         print("error ", error)
 
-        if math.fabs(error) < 0.01:
+        if math.fabs(error) < self.error_range:
             self.drive(0.0, 0.0)
             self.is_moving = False
             self.is_step_start = False
@@ -279,7 +281,7 @@ class MovingControlState(EventState):
     def on_exit(self, userdata):
         # 이 메서드는 결과가 반환되고 다른 상태가 활성화될 때 호출됩니다.
         # on_enter에서 시작된 실행 중인 프로세스를 중지하는 데 사용할 수 있습니다.
-
+     
         pass # 이 예시에서는 할 일이 없습니다.
 
 

@@ -29,35 +29,29 @@ class TrafficSign(EventState):
 		# The constructor is called when building the state machine, not when actually starting the behavior.
 		# Thus, we cannot save the starting time now and will do so later.
 
-		self._sub = ProxySubscriberCached({"/filtered/detection": String})
+		self._sub = ProxySubscriberCached({"/traffic_sign": String})
+		self._filtered_detection_sub = ProxySubscriberCached({"/filtered_detection": String})
+		
 		#self._sign = 'lane_control'
 		self._sign = None
-		
 		
 	def execute(self, userdata):
 		# 이 메서드는 상태가 활성 상태인 동안 주기적으로 호출됩니다.
 		# 주요 목적은 상태 조건을 확인하고 상응하는 결과를 트리거하는 것입니다.
 		# 결과가 반환되지 않으면 상태는 활성 상태로 유지됩니다.
-		if self._sub.has_msg("/filtered/detection"):
-			self._sign = self._sub.get_last_msg("/filtered/detection").data
-			
+		if self._sub.has_msg("/filtered_detection"):
+			self._sign = self._sub.get_last_msg("/filtered_detection").data
+			Logger.loginfo(self._sign)
 
-			print("self._sign : ", self._sign, "type(self._sign) : ",  type(self._sign))
-			
 			if self._sign == "['intersection']":
-				print("intersection mode")
 				return 'intersection_sign'
 			elif self._sign == "['obstacle']":
-				print("obstacle mode")
 				return 'obstacle_detection'
-			elif self._sign == "['parking']":
-				print("parking mode")
+			elif self._sign ==  "['parking']":
 				return 'parking_detection'
-			elif self._sign == "['stop']":
-				print("stop mode")
+			elif self._sign ==  "['stop']":
 				return 'stop_bar_status'
-			elif self._sign == "['tunnel']":
-				print("tunnel mode")
+			elif self._sign ==  "['tunnel']":
 				return 'tunnel_info'
 		# else:
 		# 	Logger.loginfo("no traffic sign")

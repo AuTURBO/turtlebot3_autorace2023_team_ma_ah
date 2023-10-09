@@ -99,7 +99,11 @@ class PreProcessor:
 
         roi = img #img[280 : (280 + self.roi_height - 50), 0 : self.roi_width]  # ROI 적용
 
+<<<<<<< HEAD
+        #cv2.imshow("roi", roi)
+=======
         # cv2.imshow("roi", roi)
+>>>>>>> origin/0542/obstacle_behavior
 
         warped_img = cv2.warpPerspective(
             roi, M, (roi.shape[1], roi.shape[0]), flags=cv2.INTER_LINEAR
@@ -143,7 +147,7 @@ class PreProcessor:
 
     def hist_line_peak(self, img):
         # print(img.shape)
-        histogram = np.sum(img[440:, :], axis=0)  # X축 히스토그램 계산
+        histogram = np.sum(img[460:, :], axis=0)  # X축 히스토그램 계산
         # print(histogram.shape)
         midpoint = np.int(histogram.shape[0] / 2)  # 중앙점 계산
         # print(f"midpoint: {midpoint}")
@@ -180,10 +184,10 @@ class PreProcessor:
         
         if lane_type == "left":
             left_base = self.hist_line_peak(img)  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
-            print(f"left_base :{left_base}")
+            #print(f"left_base :{left_base}")
         elif lane_type == "right":
             right_base = self.hist_line_peak(img)
-            print(f"right_base :{right_base}")
+            #print(f"right_base :{right_base}")
 
         # Sliding Window
         y = 470  # 탐색 시작 Y좌표 결정
@@ -198,9 +202,9 @@ class PreProcessor:
         self.left_window_n = 0
         self.right_window_n = 0
         self.mid_window_n = 0
-        self.lane_count_threshold = 5
+        self.lane_count_threshold = 6
 
-        self.lane_num = 15
+        self.lane_num = 10
 
         msk = img.copy()  # 차선검출 결과를 디스플레이 하기 위한 이미지 복사
         msk = cv2.cvtColor(msk, cv2.COLOR_GRAY2BGR)  # 컬러 표시를 위해 색공간을 Gray에서 BGR로 변환
@@ -215,7 +219,7 @@ class PreProcessor:
                     contours, _ = cv2.findContours(
                         window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
                     )  # window 영역에서 contour 검출
-
+                
                     if len(contours) == 0:  # 차선을 못 찾았을떄
                         if prev_detect_flag_left == False:  # 차선을 연속으로 못 찾았을떄
                             line_detect_fail_count_left += 1  # 차선 검출 실패 카운트 증가
@@ -277,10 +281,11 @@ class PreProcessor:
                         y - self.window_height : y,
                         right_base - self.window_width : right_base + self.window_width,
                     ]  # right window 생성
-
+       
                     contours, _ = cv2.findContours(
                         window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
                     )  # window 영역에서 contour 검출
+   
                     if len(contours) == 0:  # 차선을 못 찾았을떄
                         if prev_detect_flag_right == False:  # 차선을 연속으로 못 찾았을떄
                             line_detect_fail_count_right += 1  # 차선 검출 실패 카운트 증가

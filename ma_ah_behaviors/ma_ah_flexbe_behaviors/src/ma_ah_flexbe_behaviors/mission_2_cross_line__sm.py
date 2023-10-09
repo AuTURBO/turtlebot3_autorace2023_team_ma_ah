@@ -63,9 +63,9 @@ class mission2crosslineSM(Behavior):
 			# x:166 y:64
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
-										transitions={'lane_control': 'lane_control', 'mission_control': 'cross_select'},
+										transitions={'lane_control': 'lane_control', 'mission_control': 'IntersectionMode'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'right'})
+										remapping={'lane_info': 'middle'})
 
 			# x:236 y:202
 			OperatableStateMachine.add('lane_control_left',
@@ -86,10 +86,10 @@ class mission2crosslineSM(Behavior):
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control_right_2', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										remapping={'lane_info': 'middle'})
 
-			# x:386 y:96
-			OperatableStateMachine.add('cross_select',
+			# x:435 y:65
+			OperatableStateMachine.add('IntersectionMode',
 										IntersectionState(),
 										transitions={'turn_left': 'lane_control_left', 'turn_right': 'lane_control_right', 'proceed': 'lane_control'},
 										autonomy={'turn_left': Autonomy.Off, 'turn_right': Autonomy.Off, 'proceed': Autonomy.Off})

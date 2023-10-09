@@ -21,34 +21,46 @@ class IntersectionState(EventState):
 
     '''
 
+
+
+
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
         super(IntersectionState, self).__init__(outcomes=['turn_left', 'turn_right', 'proceed'])
 
         # Initialize class variables or state parameters here if needed.
-        self._sub = ProxySubscriberCached({"/crossroad_sign": String})
+        self._filtered_detection_sub = ProxySubscriberCached({"/filtered/detection": String})
         self._pub = ProxyPublisher({"/cmd_vel": Twist})
-        self._crossroad_sign = None
+        self.Obstacle_sign = False
 
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
+        Logger.loginfo("intersection execute")
 
-        if self._sub.has_msg("/crossroad_sign"):
-            crossroad_info = self._sub.get_last_msg("/crossroad_sign").data
-            Logger.loginfo("Crossroad sign: {}".format(crossroad_info))
+        # When robot detect any traffic sign
+        if self._sub.has_msg("/filtered/detection"):
+            self._direction = self._filtered_detection_sub.get_last_msg("/filtered/detection").data
+            Logger.loginfo("Direction sign: {}".format(self._direction))
 
-            # Assuming 'crossroad_info' is a string that indicates the crossroad sign.
-            if crossroad_info == "left":
-                self._crossroad_sign = "left"
+            #detect left sign
+            if self._direction == "['left']":
+                Logger.loginfo("Direction sign: Left")
                 return 'turn_left'
-            elif crossroad_info == "right":
-                self._crossroad_sign = "right"
+            
+            
+            #detect right sign
+            elif self._direction == "['right']":
+                Logger.loginfo("Direction sign: Left")
                 return 'turn_right'
-        else:
-            Logger.loginfo("No crossroad sign available.")
-            return 'proceed'
+
+            # When robot did't detect sign yet , keep lane control            
+            else:
+                Logger.loginfo("No Left, Right sign, Keep Lane control")
+                return 'proceed'
+
+
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.
         # It is typically used to start actions related to this state.

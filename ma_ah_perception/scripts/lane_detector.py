@@ -22,7 +22,7 @@ pre_module = PreProcessor(roi_height, roi_width)
 
 
 class Lane_detector:
-    def __init__(self, img_topic, cmd_vel_topic, center_lane_topic, processed_img_topic):
+    def __init__(self, img_topic, cmd_vel_topic, center_lane_topic, left_lane_topic, right_lane_topic, processed_img_topic):
         self.lane_bin_th = 120  # 145
         self.frameWidth = 0
         self.frameHeight = 0
@@ -32,10 +32,13 @@ class Lane_detector:
         self.red = (0, 0, 255)
 
         self.img_subscriber = rospy.Subscriber(img_topic, CompressedImage, self.img_cb)
-        self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
+        # self.cmd_vel_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
         self.cener_line_publisher = rospy.Publisher(center_lane_topic, Float64, queue_size=10)
 
         self.processed_img_publisher = rospy.Publisher(processed_img_topic, Image, queue_size=10)
+
+        self.left_lane_publisher = rospy.Publisher(left_lane_topic, Float64, queue_size=10)
+        self.right_lane_publisher = rospy.Publisher(right_lane_topic, Float64, queue_size=10)
     
     def img_cb(self, img_msg):
         try:
@@ -70,6 +73,24 @@ class Lane_detector:
         print(f"target: {target}")
         return int(target)
 
+    def lane_publish(self, lx, ly, rx, ry):
+        left_line_msg = Float64()
+        right_line_msg = Float64()
+
+        none_value = 1000
+    
+        if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
+            left_line_msg.data = lx[0]
+            right_line_msg.data = rx[0]
+        elif lx != None and len(lx) > 3:
+            left_line_msg.data = lx[0]
+            right_line_msg.data = none_value
+        elif rx != None and len(rx) > 3:
+            left_line_msg.data = none_value
+            right_line_msg.data = rx[0]
+
+        self.left_lane_publisher.publish(left_line_msg)
+        self.right_lane_publisher.publish(right_line_msg)
 
     def process(self, frame):
         #print(frame.shape)
@@ -85,7 +106,7 @@ class Lane_detector:
         #cv2.imshow("gblur_img", gblur_img)
 
         warped_img = pre_module.warp_perspect(gblur_img, "usb_cam")
-        cv2.imshow('warped_img', warped_img)	
+        #cv2.imshow('warped_img', warped_img)	
 
         left_lane_img, right_lane_img = self.color_filtering(warped_img)
 
@@ -106,11 +127,13 @@ class Lane_detector:
         left_lane_gray = cv2.cvtColor(left_lane_img, cv2.COLOR_BGR2GRAY)
         right_lane_gray = cv2.cvtColor(right_lane_img, cv2.COLOR_BGR2GRAY)
 
+        #left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "otsu", window_name="otsu", show=False)
+
         left_msk, lx, ly = pre_module.sliding_window(left_lane_gray, "left")
         right_msk, rx, ry = pre_module.sliding_window(right_lane_gray, "right")
 
-        cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
-        cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
+        #cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
+        #cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
 
         msk = cv2.add(left_msk, right_msk)
         # filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)
@@ -122,24 +145,30 @@ class Lane_detector:
 
         # target = 0
         angle = 320 - target
-        angle = self.map(angle, 100, -100, 2.5, -2.5) # 0.5
+        angle = self.map(angle, 100, -100, 3.0, -3.0) # 0.5
         # angle = angle * 0.5
         # print(f"angle: {angle}")
 
-        cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = 0.5 # 0.1
-        cmd_vel_msg.angular.z = angle
+        # cmd_vel_msg = Twist()
+        # cmd_vel_msg.linear.x = 0.8 # 0.1
+        # cmd_vel_msg.angular.z = angle
 
+<<<<<<< HEAD
+        #self.cmd_vel_publisher.publish(cmd_vel_msg)
+=======
         # self.cmd_vel_publisher.publish(cmd_vel_msg)
+>>>>>>> origin/0542/obstacle_behavior
 
         center_line_msg = Float64()
         center_line_msg.data = target
         self.cener_line_publisher.publish(center_line_msg)
 
+        self.lane_publish(lx, ly, rx, ry)
+
         cv2.circle(frame, (int(target), int(480 - 135)), 1, (120, 0, 255), 10)
 
         cv2.imshow("Lane Detection - Sliding Windows", msk)
-        cv2.imshow('frame', frame)	# 프레임 보여주기
+        #cv2.imshow('frame', frame)	# 프레임 보여주기
 
         key = cv2.waitKey(1)  # frameRate msec동안 한 프레임을 보여준다
         
@@ -253,6 +282,9 @@ if __name__ == '__main__':
     center_lane_topic = "/detect/lane"
     processed_img_topic = "/processed/img"
 
+    left_lane_topic = "/detect/left/lane"
+    right_lane_topic = "/detect/right/lane"
+
     # lane_detector = Lane_detector(image_topic, cmd_vel_topic)
-    lane_detector = Lane_detector(image_topic, cmd_vel_topic, center_lane_topic, processed_img_topic)
+    lane_detector = Lane_detector(image_topic, cmd_vel_topic, center_lane_topic, left_lane_topic, right_lane_topic, processed_img_topic)
     rospy.spin()

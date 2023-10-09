@@ -8,6 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
+from flexbe_states.wait_state import WaitState
 from ma_ah_flexbe_states.lane_control import ControlLaneState
 from ma_ah_flexbe_states.move_base import MoveBaseState
 # Additional imports can be added inside the following tags
@@ -31,6 +32,7 @@ class mission6tunnelSM(Behavior):
 		self.name = 'mission 6 tunnel'
 
 		# parameters of this behavior
+		self.add_parameter('wait_time', 1)
 
 		# references to used behaviors
 
@@ -60,19 +62,25 @@ class mission6tunnelSM(Behavior):
 
 
 		with _state_machine:
-			# x:519 y:100
-			OperatableStateMachine.add('goal_move_base',
-										MoveBaseState(),
-										transitions={'arrived': 'lane_control', 'failed': 'failed'},
-										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
-										remapping={'waypoint': 'waypoint'})
+			# x:191 y:101
+			OperatableStateMachine.add('wait_state',
+										WaitState(wait_time=self.wait_time),
+										transitions={'done': 'goal_move_base'},
+										autonomy={'done': Autonomy.Off})
 
-			# x:664 y:329
+			# x:646 y:376
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
 										remapping={'lane_info': 'middle'})
+
+			# x:491 y:167
+			OperatableStateMachine.add('goal_move_base',
+										MoveBaseState(),
+										transitions={'arrived': 'lane_control', 'failed': 'failed'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'waypoint': 'waypoint'})
 
 
 		return _state_machine

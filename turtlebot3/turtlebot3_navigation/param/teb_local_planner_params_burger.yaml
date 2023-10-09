@@ -36,7 +36,7 @@ TebLocalPlannerROS:
 
   # 장애물 관련 설정
   min_obstacle_dist: 0.05  # 장애물로 간주되는 최소 거리 (로봇 반지름 포함, 미터)
-  inflation_dist: 0.05  # 장애물 팽창 반지름 (미터)
+  inflation_dist: 0.01  # 장애물 팽창 반지름 (미터)
   include_costmap_obstacles: True  # 코스트맵 장애물 포함 여부
   costmap_obstacles_behind_robot_dist: 1.5  # 로봇 뒤의 코스트맵 장애물 고려 거리 (미터)
   obstacle_poses_affected: 15  # 영향을 주는 장애물 포즈 수

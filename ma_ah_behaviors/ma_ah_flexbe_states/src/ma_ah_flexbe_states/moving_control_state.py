@@ -26,34 +26,51 @@ class MovingControlState(EventState):
     '''
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(MovingControlState, self).__init__(outcomes=['procced', 'done'], input_keys=['moving_info'])
+        super(MovingControlState, self).__init__(outcomes=['procced', 'done'], input_keys=['moving_info', 'target_distance', 'target_theta'])
 
         self.sub_odom = ProxySubscriberCached({"/odom": Odometry})
         self.sub_scan = ProxySubscriberCached({"/scan": LaserScan})
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
 
-        self.steer_angle = Twist()
-        self.current_pos = 0
-        self.current_theta = 0
-        self.lastError = 0
-        self.last_current_theta = 0
-        self.last_current_pos = 0
-        self.cmd_moving = None
+        # drive
+        self.steer_angle = Twist()  # 조향 각도를 제어하기 위한 메시지 객체
 
-        self.target_distance = 0.2
+        # 현재 위치와 각도 정보
+        self.current_pos = 0  # 현재 위치(미사용)
+        self.current_pos_x = 0.0  # 현재 X 좌표
+        self.current_pos_y = 0.0  # 현재 Y 좌표
+        self.current_theta = 0  # 현재 각도 (yaw)
+
+        # 제어에 사용되는 변수
+        self.lastError = 0  # PID 제어를 위한 이전 오차
+        self.last_current_theta = 0  # 이전의 현재 각도
+        self.last_current_pos = 0  # 이전의 현재 위치 (미사용)
+
+        # 이동 명령 관련 변수
+        self.cmd_moving = None  # 이동 명령 (앞으로 이동, 뒤로 이동, 등)
+
+        # 이동 명령을 수행하기 위한 목표 거리
+        self.target_distance = 0.2  # 예시로 설정된 목표 이동 거리
+
+        # 현재 이동한 거리
         self.current_distance = 0.0
 
-        self.target_theta = 1.57/2
-        self.current_theta = 0.0
+        # 목표 각도와 현재 각도
+        self.target_theta = 1.57  # 예시로 설정된 목표 각도 (π/2 라디안)
+        self.current_theta = 0.0  # 현재 각도
 
-        self.start_x = 0.0
-        self.start_y = 0.0
-        self.start_theta = 0.0
-        self.is_moving = False
-        
+        # 이동 시작 위치 및 방향 정보
+        self.start_x = 0.0  # 이동 시작 X 좌표
+        self.start_y = 0.0  # 이동 시작 Y 좌표
+        self.start_theta = 0.0  # 이동 시작 각도 (yaw)
+        self.is_moving = False  # 이동 중 여부를 나타내는 플래그
 
+        # 원하는 각도 정보 (예시로 설정된 값)
+        self.desired_theta = 0.0
 
-        self.distance = 0.2
+        # control flag
+        self.is_step_start = False
+
         # Initialize class variables or state parameters here if needed.
         self.control_dict = {
             # 일정거리 직진 
@@ -78,16 +95,27 @@ class MovingControlState(EventState):
         # odometry = 
         odom_msg = self.sub_odom.get_last_msg("/odom")
 
-        if not self.is_moving:
-            self.start_x = odom_msg.pose.pose.position.x
-            self.start_y = odom_msg.pose.pose.position.y
-            self.start_theta = odom_msg.pose.pose.orientation.z
-            self.is_moving = True
-        
-        delta_x = odom_msg.pose.pose.position.x - self.start_x
-        delta_y = odom_msg.pose.pose.position.y - self.start_y
-        self.current_distance = math.sqrt(delta_x**2 + delta_y**2)
-        self.current_theta = odom_msg.pose.pose.orientation.z - self.start_theta
+        quaternion = (odom_msg.pose.pose.orientation.x, odom_msg.pose.pose.orientation.y, odom_msg.pose.pose.orientation.z, odom_msg.pose.pose.orientation.w)
+        self.current_theta = self.euler_from_quaternion(quaternion)
+
+        if (self.current_theta - self.last_current_theta) < -math.pi:
+            self.current_theta = 2. * math.pi + self.current_theta
+            self.last_current_theta = math.pi
+        elif (self.current_theta - self.last_current_theta) > math.pi:
+            self.current_theta = -2. * math.pi + self.current_theta
+            self.last_current_theta = -math.pi
+        else:
+            self.last_current_theta = self.current_theta
+
+        self.current_pos_x = odom_msg.pose.pose.position.x
+        self.current_pos_y = odom_msg.pose.pose.position.y
+
+
+    def euler_from_quaternion(self, quaternion):
+        theta = tf.transformations.euler_from_quaternion(quaternion)[2]
+        return theta
+
+
 
     def drive(self, linear_velocity, angular_velocity):
         self.steer_angle.linear.x = linear_velocity
@@ -97,51 +125,57 @@ class MovingControlState(EventState):
 
     def left_turn(self):
         self.control_dict['odom']()
-        Kp = 1.5
+        Kp = 0.6
         Ki = 0.0
-        Kd = 0.0
-        self.lastError = 0
-
-
-        error = self.current_theta - self.target_theta
+        Kd = 0.05
+        
+        if self.is_step_start == False:
+            self.disired_theta = self.current_theta + self.target_theta
+            self.is_step_start = True
+            self.lastError = 0
+        
+        error = self.current_theta - self.disired_theta
         control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
         self.lastError = error
-
-        # print("left_turn", self.current_theta)
+        
         print("error ", error)
-        if abs(error) < 0.05:
+
+        if math.fabs(error) < 0.05:
             self.drive(0.0, 0.0)
             self.is_moving = False
+            self.is_step_start = False
             return True
         else:
-            self.drive(0.0, -control)
+            self.drive(0.0, -2*control)
             return False
-            
+
+
     
     def right_turn(self):
         self.control_dict['odom']()
-        Kp = 1.5
+        Kp = 0.6
         Ki = 0.0
-        Kd = 0.0
-        self.lastError = 0
-
-        error = self.current_theta + self.target_theta
+        Kd = 0.05
+        
+        if self.is_step_start == False:
+            self.disired_theta = self.current_theta - self.target_theta
+            self.is_step_start = True
+            self.lastError = 0
+        
+        error = self.current_theta - self.disired_theta
         control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
         self.lastError = error
+        
+        print("error ", error)
 
-        print("left_turn", self.current_theta)
-
-        if abs(error) < 0.05:
+        if math.fabs(error) < 0.05:
             self.drive(0.0, 0.0)
             self.is_moving = False
+            self.is_step_start = False
             return True
         else:
-            self.drive(0.0, -control)
+            self.drive(0.0, -2*control)
             return False
-
-
-
-
 
 
 
@@ -150,52 +184,64 @@ class MovingControlState(EventState):
         self.drive(0.0, 0.0)
         return True
     
-#
 
     def go_straight(self):
         self.control_dict['odom']()
-        Kp = 1.5
+        Kp = 0.8
         Ki = 0.0
-        Kd = 0.0
-        self.lastError = 0
+        Kd = 0.05
+        
+        if self.is_step_start == False:
+            self.start_x = self.current_pos_x
+            self.start_y = self.current_pos_y
+            self.is_step_start = True
+            self.lastError = 0
+        
+        error = math.sqrt((self.current_pos_x - self.start_x)**2 + (self.current_pos_y - self.start_y)**2) - self.target_distance
 
-        error = self.current_distance - self.target_distance
         control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
         self.lastError = error
-
-        # print("diff", self.current_pos - self.last_current_pos)
+        
         print("error ", error)
 
-        if abs(error) < 0.05:
+        if math.fabs(error) < 0.05:
             self.drive(0.0, 0.0)
             self.is_moving = False
+            self.is_step_start = False
             return True
-        else: 
+        else:
             self.drive(-control, 0.0)
             return False
-        
 
 
     def back(self):
         self.control_dict['odom']()
-        Kp = 1.5
+        Kp = 0.8
         Ki = 0.0
-        Kd = 0.0
-        self.lastError = 0
+        Kd = 0.05
+        
+        if self.is_step_start == False:
+            self.start_x = self.current_pos_x
+            self.start_y = self.current_pos_y
+            self.is_step_start = True
+            self.lastError = 0
+        
+        error = math.sqrt((self.current_pos_x - self.start_x)**2 + (self.current_pos_y - self.start_y)**2) - self.target_distance
 
-        error = self.current_distance - self.target_distance
         control = Kp * error + Kd * (error - self.lastError) + Ki * (error)
         self.lastError = error
+        
+        print("error ", error)
 
-        print("back", self.current_pos)
-
-        if abs(error) < 0.05:
+        if math.fabs(error) < 0.05:
             self.drive(0.0, 0.0)
             self.is_moving = False
+            self.is_step_start = False
             return True
         else:
             self.drive(control, 0.0)
             return False
+
         
 
     def execute(self, userdata):
@@ -215,6 +261,8 @@ class MovingControlState(EventState):
         
         self.control_dict['odom']()
         self.cmd_moving = userdata.moving_info
+        self.target_distance = userdata.target_distance
+        self.target_theta = userdata.target_theta
         # # # 3항 연산자
         if self.control_dict[self.cmd_moving]() : 
             print("succesadasdasdasdss")

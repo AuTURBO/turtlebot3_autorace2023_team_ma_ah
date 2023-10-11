@@ -9,7 +9,7 @@ from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
-
+from sensor_msgs.msg import LaserScan
 
 class FindParkingState(EventState):
     '''
@@ -26,28 +26,64 @@ class FindParkingState(EventState):
         super(FindParkingState, self).__init__(outcomes=['left', 'right', 'proceed'])
 
         # Initialize class variables or state parameters here if needed.
-        self._sub = ProxySubscriberCached({"/parking_detection": String})
-        self._parking_proceed = False
+        self.sub_scan = ProxySubscriberCached({"/scan": LaserScan})
+        self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
+
+        self.is__left_obstacle_detected = False
+        self.is__right_obstacle_detected = False
+
+    def checkObstacle(self):
+        scan = self.sub_scan.get_last_msg("/scan")
+        left_scan_start = 85
+        left_scan_end = 95
+        right_scan_start = 265
+        right_scan_end = 275
+        
+        threshold_distance = 0.5
+        is_left_obstacle_detected = False
+        is_right_obstacle_detected = False
+        for i in range(left_scan_start, left_scan_end):
+            if scan.ranges[i] < threshold_distance and scan.ranges[i] > 0.01:
+                is_left_obstacle_detected = True
+
+                # print(scan.ranges[i])
+                break
+        
+        for i in range(right_scan_start, right_scan_end):
+            if scan.ranges[i] < threshold_distance and scan.ranges[i] > 0.01:
+                is_right_obstacle_detected = True
+
+                # print(scan.ranges[i])
+                break
+        
+        self.is__left_obstacle_detected = is_left_obstacle_detected
+        self.is__right_obstacle_detected = is_right_obstacle_detected
+
+
 
     def execute(self, userdata):
         # This method is called periodically while the state is active.
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
-
-        if self._sub.has_msg("/parking_detection") == "procced":
-            Logger.loginfo("Waiting for parking detection...")
+        if self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == False:
+            Logger.loginfo('No obstacle detected')
+            twist = Twist()
+            twist.linear.x = 0.2
+            self.pub_cmd_vel.publish("/cmd_vel", twist)
             return 'proceed'
-        elif self._sub.get_last_msg("/parking_detection").data == "left":
-            Logger.loginfo("Parking spot detected on the left.")
+        elif self.is__left_obstacle_detected == True and self.is__right_obstacle_detected == False:
+            Logger.loginfo('Left obstacle detected')
             return 'left'
-        elif self._sub.get_last_msg("/parking_detection").data == "right":
-            Logger.loginfo("Parking spot detected on the right.")
+        elif self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == True:
+            Logger.loginfo('Right obstacle detected')
             return 'right'
+        
         
     def on_enter(self, userdata):
         # This method is called when the state becomes active, i.e., when transitioning to this state.
         # It is typically used to start actions related to this state.
         Logger.loginfo('Entered state Parking')
+        self.checkObstacle()
 
     # You can define other state lifecycle methods like on_exit, on_start, and on_stop if needed.
 

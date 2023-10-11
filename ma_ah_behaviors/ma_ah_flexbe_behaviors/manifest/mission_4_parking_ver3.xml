@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<behavior name="mission 6 tunnel">
+<behavior name="mission 4 parking_ver3">
 
-	<executable package_path="ma_ah_flexbe_behaviors.mission_6_tunnel_sm" class="mission6tunnelSM" />
+	<executable package_path="ma_ah_flexbe_behaviors.mission_4_parking_ver3_sm" class="mission4parking_ver3SM" />
 	<tagstring></tagstring>
-	<author>ggh-png</author>
-	<date>Fri Oct 06 2023</date>
+	<author>sion jeon</author>
+	<date>Thu Oct 05 2023</date>
 	<description>
-		mission 6 tunnel
+		mission 4 parking
 	</description>
 
 
@@ -18,7 +18,7 @@
 
 		<param type="numeric" name="wait_time" default="1" label="wait_time" hint="Sets the wait_time">
 			<min value="0" />
-			<max value="10" />
+			<max value="1" />
 		</param>
 
 	</params>

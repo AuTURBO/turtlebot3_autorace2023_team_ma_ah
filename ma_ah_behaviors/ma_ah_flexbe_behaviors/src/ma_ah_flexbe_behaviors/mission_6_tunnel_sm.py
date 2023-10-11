@@ -8,8 +8,10 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
+from flexbe_states.wait_state import WaitState
 from ma_ah_flexbe_states.lane_control import ControlLaneState
 from ma_ah_flexbe_states.move_base import MoveBaseState
+from ma_ah_flexbe_states.set_initial_pose_state import SetInitialPoseState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -31,6 +33,7 @@ class mission6tunnelSM(Behavior):
 		self.name = 'mission 6 tunnel'
 
 		# parameters of this behavior
+		self.add_parameter('wait_time', 1)
 
 		# references to used behaviors
 
@@ -44,9 +47,9 @@ class mission6tunnelSM(Behavior):
 
 
 	def create(self):
-		initial_pose = [-2.5, 2.2, -1.57]
+		initial_pose = [-2.38, 2.17, -1.57]
 		middle = "middle"
-		waypoint = [0.2, -1.75, 0]
+		waypoint = [-0.65, 0.1, -0.003, 0.99]
 		# x:30 y:638, x:130 y:638
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.initial_pose = initial_pose
@@ -60,19 +63,32 @@ class mission6tunnelSM(Behavior):
 
 
 		with _state_machine:
-			# x:519 y:100
-			OperatableStateMachine.add('goal_move_base',
-										MoveBaseState(),
-										transitions={'arrived': 'lane_control', 'failed': 'failed'},
-										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
-										remapping={'waypoint': 'waypoint'})
+			# x:328 y:85
+			OperatableStateMachine.add('set_init',
+										SetInitialPoseState(),
+										transitions={'succeeded': 'wait_state'},
+										autonomy={'succeeded': Autonomy.Off},
+										remapping={'initial_pose': 'initial_pose'})
 
-			# x:664 y:329
+			# x:646 y:376
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
 										remapping={'lane_info': 'middle'})
+
+			# x:632 y:146
+			OperatableStateMachine.add('wait_state',
+										WaitState(wait_time=self.wait_time),
+										transitions={'done': 'goal_move_base'},
+										autonomy={'done': Autonomy.Off})
+
+			# x:440 y:198
+			OperatableStateMachine.add('goal_move_base',
+										MoveBaseState(),
+										transitions={'arrived': 'lane_control', 'failed': 'goal_move_base'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'waypoint': 'waypoint'})
 
 
 		return _state_machine

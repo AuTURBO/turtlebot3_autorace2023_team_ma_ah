@@ -18,10 +18,10 @@ class ControlLaneState(EventState):
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['lane_control', 'mission_control'], input_keys=['lane_info'])
+        super(ControlLaneState, self).__init__(outcomes=['mission_control'], input_keys=['lane_info', 'pid_info'])
         
         self.lastError = 0
-        self._MAX_VEL = 0.1
+        self._MAX_VEL = 0.4
         
         self.sub_middle_lane = ProxySubscriberCached({"/detect/middle/lane": Float64})
         self.sub_left_lane = ProxySubscriberCached({"/detect/left/lane": Float64})
@@ -35,6 +35,9 @@ class ControlLaneState(EventState):
         # pure pursuit control
         self.WB = 0.20
         self.Lf = 0.20
+        self.Kp = 0.015
+        self.Ki = 0.000
+        self.Kd = 0.007
 
 
     # pid control
@@ -43,19 +46,17 @@ class ControlLaneState(EventState):
         error = center - 320
         # 0 - target
         # error = map(error, 100, -100, 2.5, -2.5)
-        Kp = 0.013
-        Ki = 0.001
-        Kd = 0.006
+        self.Kp = 0.015
+        self.Ki = 0.000
+        self.Kd = 0.007
 
-        angular_z = Kp * error + Kd * (error - self.lastError) + Ki * (error)
+        angular_z = self.Kp * error + self.Kd * (error - self.lastError) + self.Ki * (error)
         self.lastError = error
         
         twist = Twist()
-        twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.06)
+        twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.05)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
         
-        # self
-        # self.pub_cmd_vel.publish(twist)
         self.pub_cmd_vel.publish("/cmd_vel", twist)
         Logger.loginfo("Following lane...")
 
@@ -95,7 +96,7 @@ class ControlLaneState(EventState):
         Logger.loginfo("Right lane: {}".format(right_lane_data))
         no_line_margin = 280
         if direction_sign_data == "left": # Set Mode (left lane following)
-            Logger.loginfo("See Left lane!!")
+            Logger.loginfo("See Left lane!!") 
             #target = left_lane_data + side_margin
 
             if (abs(left_lane_data - 0.0) <= 0.01) or left_lane_data == 1000 : # if exist only left lane
@@ -133,15 +134,19 @@ class ControlLaneState(EventState):
             elif left_lane_data == 1000 and right_lane_data == 1000: # if don't exist lane
                 target = 0
 
-        angle = 320 - target
-        Logger.loginfo("target: {}".format(target))
-        Logger.loginfo("Angle: {}".format(angle))
-        print(f"target: {target}")
-        angle = self.map(angle, 100, -100, 1.5, -1.5) # 0.5
-        print(f"angle: {angle}")
-        return float(angle)
+        # angle = 320 - target
+        # Logger.loginfo("target: {}".format(target))
+        # Logger.loginfo("Angle: {}".format(angle))
+        # print(f"target: {target}")
+        # angle = self.map(angle, 100, -100, 1.5, -1.5) # 0.5
+        # print(f"angle: {angle}")
+        # return float(angle)
+        return target
 
     def on_enter(self, userdata):
+        self.Kp = userdata.pid_info[0] 
+        self.Ki = userdata.pid_info[1]
+        self.Kd = userdata.pid_info[2]
         Logger.loginfo("Starting lane control...")
 
             
@@ -152,12 +157,16 @@ class ControlLaneState(EventState):
             left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
             right_lane_data = self.sub_right_lane.get_last_msg("/detect/right/lane").data
         
-            angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
+            # angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
 
-            cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = 0.15 # 0.1
-            cmd_vel_msg.angular.z = angle
-            self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
+            target = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
+
+            self.pid_control(target)  
+
+            # cmd_vel_msg = Twist()
+            # cmd_vel_msg.linear.x = 0.15 # 0.1
+            # cmd_vel_msg.angular.z = angle
+            # self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
 
         # When robot detect any traffic sign
         if self._sub.has_msg("/filtered/detection"):
@@ -169,7 +178,6 @@ class ControlLaneState(EventState):
             # recursion lane control
             if self._traffic_sign == "[]":
                 Logger.loginfo("lane control recursion")
-                return 'lane_control'
      
                 #self.pid_control(desired_center)
             else: # move mission_control
@@ -179,9 +187,11 @@ class ControlLaneState(EventState):
 
 
     def on_exit(self, userdata):
-
-        pass # 이 예시에서는 할 일이 없습니다.
-
+        twist = Twist()
+        twist.linear.x = 0.0
+        twist.angular.z = 0.0
+        self.pub_cmd_vel.publish("/cmd_vel", twist)
+        
 
     def on_start(self):
 

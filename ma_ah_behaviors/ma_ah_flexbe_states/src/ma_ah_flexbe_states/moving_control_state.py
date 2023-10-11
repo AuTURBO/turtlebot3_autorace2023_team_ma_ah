@@ -90,9 +90,11 @@ class MovingControlState(EventState):
         }
         self._success = False
         self._fail = False
+
     def euler_from_quaternion(self, quaternion):
         theta = tf.transformations.euler_from_quaternion(quaternion)[2]
         return theta
+    
     def odom_update(self):
         # odometry = 
         odom_msg = self.sub_odom.get_last_msg("/odom")
@@ -180,7 +182,6 @@ class MovingControlState(EventState):
             return False
 
 
-
     def stop(self):
         print("stop")
         self.drive(0.0, 0.0)
@@ -249,7 +250,7 @@ class MovingControlState(EventState):
     def execute(self, userdata):
   
         if self._success:
-            return 'done'
+            return 'done' 
         elif self._fail:
             return 'procced'
  
@@ -265,12 +266,10 @@ class MovingControlState(EventState):
         self.cmd_moving = userdata.moving_info
         self.target_distance = userdata.target_distance
         self.target_theta = userdata.target_theta
-        # # # 3항 연산자
+
         if self.control_dict[self.cmd_moving]() : 
-            print("succesadasdasdasdss")
             self._success = True
         else :
-            print("faiasdasdasdasdasl")
             self._fail = True
 
         # Logger.loginfo('Entered state moving')

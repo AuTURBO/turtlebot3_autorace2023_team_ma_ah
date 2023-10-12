@@ -12,7 +12,7 @@ from flexbe_core.proxy import ProxyPublisher
 from std_msgs.msg import String
 from sensor_msgs.msg import LaserScan
 
-class FindParkingStateObs(EventState):
+class ControlLaneFindParkingState(EventState):
     '''
     Example for a state to detect parking spots.
     This state listens to a topic for parking information and reacts accordingly.
@@ -24,7 +24,7 @@ class FindParkingStateObs(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(FindParkingStateObs, self).__init__(outcomes=['left', 'right', 'proceed'], input_keys=['lane_info'])
+        super(ControlLaneFindParkingState, self).__init__(outcomes=['left', 'right', 'proceed'], input_keys=['lane_info'])
 
         # Initialize class variables or state parameters here if needed.
         self.sub_scan = ProxySubscriberCached({"/scan": LaserScan})
@@ -53,12 +53,11 @@ class FindParkingStateObs(EventState):
     def checkObstacle(self):
         if self.sub_scan.has_msg("/scan"):
             scan = self.sub_scan.get_last_msg("/scan")
-            left_scan_start = -90 
-            left_scan_end = 0
-            right_scan_start = 0
-            right_scan_end = 90
-            
-            threshold_distance = 0.5
+            left_scan_start = 85
+            left_scan_end = 95
+            right_scan_start = 265
+            right_scan_end = 275
+            threshold_distance = 0.2
             is_left_obstacle_detected = False
             is_right_obstacle_detected = False
             for i in range(left_scan_start, left_scan_end):
@@ -200,8 +199,8 @@ class FindParkingStateObs(EventState):
 
             angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
             cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = 0.15 # 0.1
-            cmd_vel_msg.angular.z = angle
+            cmd_vel_msg.linear.x = 0.05 # 0.1
+            cmd_vel_msg.angular.z = 0.0 #angle
             self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
             return 'proceed'
 

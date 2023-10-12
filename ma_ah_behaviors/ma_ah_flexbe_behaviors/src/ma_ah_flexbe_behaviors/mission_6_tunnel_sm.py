@@ -49,7 +49,7 @@ class mission6tunnelSM(Behavior):
 	def create(self):
 		initial_pose = [-2.38, 2.17, -1.57]
 		middle = "middle"
-		waypoint = [-0.7, -0.06, -0.003, 0.99]
+		waypoint = [-0.55, 0.0, -0.003, 0.99]
 		# x:30 y:638, x:130 y:638
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.initial_pose = initial_pose

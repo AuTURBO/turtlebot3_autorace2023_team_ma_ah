@@ -8,6 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
+from ma_ah_flexbe_states.lane_control import ControlLaneState
 from ma_ah_flexbe_states.moving_control_state import MovingControlState
 from ma_ah_flexbe_states.obstacle_control_lane_state import ObstacleControlLaneState
 # Additional imports can be added inside the following tags
@@ -47,11 +48,19 @@ class mission3obstacleavoidenceSM(Behavior):
 		left = "left"
 		right = "right"
 		go = "go"
-		# x:670 y:88, x:51 y:321
+		middle = "middle"
+		target_theta = 1.6
+		target_distance = 2
+		scan_info = [85, 95]
+		# x:670 y:88, x:145 y:311
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.left = left
 		_state_machine.userdata.right = right
 		_state_machine.userdata.go = go
+		_state_machine.userdata.target_theta = target_theta
+		_state_machine.userdata.target_distance = target_distance
+		_state_machine.userdata.middle = middle
+		_state_machine.userdata.scan_info = scan_info
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -60,68 +69,75 @@ class mission3obstacleavoidenceSM(Behavior):
 
 
 		with _state_machine:
-			# x:95 y:53
+			# x:447 y:79
 			OperatableStateMachine.add('obstacle_lane_control',
 										ObstacleControlLaneState(),
-										transitions={'obstacle_lane_control': 'obstacle_lane_control', 'obstacle_mission_control': 'left'},
-										autonomy={'obstacle_lane_control': Autonomy.Off, 'obstacle_mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										transitions={'mission_control': 'left'},
+										autonomy={'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'right', 'scan_info': 'scan_info'})
 
 			# x:538 y:621
 			OperatableStateMachine.add('go_3',
 										MovingControlState(),
 										transitions={'procced': 'go_3', 'done': 'left_2'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'go'})
+										remapping={'moving_info': 'go', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
-			# x:141 y:148
+			# x:866 y:105
+			OperatableStateMachine.add('lane_control_start',
+										ControlLaneState(),
+										transitions={'lane_control': 'lane_control_start', 'mission_control': 'obstacle_lane_control_3'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'middle'})
+
+			# x:192 y:167
 			OperatableStateMachine.add('left',
 										MovingControlState(),
 										transitions={'procced': 'left', 'done': 'go'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'left'})
+										remapping={'moving_info': 'left', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
-			# x:705 y:444
+			# x:710 y:515
 			OperatableStateMachine.add('left_2',
 										MovingControlState(),
 										transitions={'procced': 'left_2', 'done': 'obstacle_lane_control_3'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'left'})
+										remapping={'moving_info': 'left', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
 			# x:102 y:443
 			OperatableStateMachine.add('obstacle_lane_control_2',
 										ObstacleControlLaneState(),
-										transitions={'obstacle_lane_control': 'obstacle_lane_control_2', 'obstacle_mission_control': 'right_2'},
-										autonomy={'obstacle_lane_control': Autonomy.Off, 'obstacle_mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										transitions={'mission_control': 'right_2'},
+										autonomy={'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'left', 'scan_info': 'scan_info'})
 
-			# x:681 y:258
+			# x:723 y:383
 			OperatableStateMachine.add('obstacle_lane_control_3',
 										ObstacleControlLaneState(),
-										transitions={'obstacle_lane_control': 'obstacle_lane_control_3', 'obstacle_mission_control': 'finished'},
-										autonomy={'obstacle_lane_control': Autonomy.Off, 'obstacle_mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										transitions={'mission_control': 'finished'},
+										autonomy={'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'left', 'scan_info': 'scan_info'})
 
 			# x:259 y:340
 			OperatableStateMachine.add('right',
 										MovingControlState(),
 										transitions={'procced': 'right', 'done': 'obstacle_lane_control_2'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'right'})
+										remapping={'moving_info': 'right', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
 			# x:372 y:541
 			OperatableStateMachine.add('right_2',
 										MovingControlState(),
 										transitions={'procced': 'right_2', 'done': 'go_3'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'right'})
+										remapping={'moving_info': 'right', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
 			# x:213 y:253
 			OperatableStateMachine.add('go',
 										MovingControlState(),
 										transitions={'procced': 'go', 'done': 'right'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
-										remapping={'moving_info': 'go'})
+										remapping={'moving_info': 'go', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
 
 		return _state_machine

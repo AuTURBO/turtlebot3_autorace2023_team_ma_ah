@@ -14,6 +14,7 @@
 	<!-- Contained Behaviors -->
 	<contains name="mission 1 traffic light" />
 	<contains name="mission 2 cross line " />
+	<contains name="mission 3 obstacle avoidence" />
 
 	<!-- Available Parameters -->
 

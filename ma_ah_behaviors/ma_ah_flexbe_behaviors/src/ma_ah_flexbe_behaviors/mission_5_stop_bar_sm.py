@@ -58,16 +58,23 @@ class mission5stopbarSM(Behavior):
 
 
 		with _state_machine:
+			# x:72 y:103
+			OperatableStateMachine.add('lane_control_2',
+										ControlLaneState(),
+										transitions={'lane_control': 'lane_control_2', 'mission_control': 'stop_bar_state'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'left'})
+
 			# x:256 y:77
 			OperatableStateMachine.add('stop_bar_state',
 										StopBarState(),
 										transitions={'proceed': 'stop_bar_state', 'done': 'lane_control'},
 										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
 
-			# x:235 y:229
+			# x:275 y:290
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
-										transitions={'lane_control': 'stop_bar_state', 'mission_control': 'finished'},
+										transitions={'lane_control': 'lane_control', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
 										remapping={'lane_info': 'left'})
 

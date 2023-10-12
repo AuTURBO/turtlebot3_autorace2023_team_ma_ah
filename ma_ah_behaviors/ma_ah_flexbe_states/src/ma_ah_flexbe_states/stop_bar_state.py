@@ -25,7 +25,9 @@ class StopBarState(EventState):
         super(StopBarState, self).__init__(outcomes=['proceed', 'done'])
 
         # Initialize class variables or state parameters here if needed.
-        self._sub = ProxySubscriberCached({"/stop_bar_status": String})
+        self._filtered_detection_sub = ProxySubscriberCached({"/filtered/detection": String})
+
+        self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
         self._stop_bar_status = None
 
     def execute(self, userdata):
@@ -33,18 +35,33 @@ class StopBarState(EventState):
         # Its main purpose is to check the condition of the state and trigger the corresponding outcome.
         # If no outcome is returned, the state will stay active.
 
-        if self._sub.has_msg("/stop_bar_status"):
-            stop_bar_info = self._sub.get_last_msg("/stop_bar_status").data
-            Logger.loginfo("Stop bar status: {}".format(stop_bar_info))
+        
+        # When robot detect any traffic sign
+        if self._filtered_detection_sub.has_msg("/filtered/detection"):
+            self._traffic_sign = self._filtered_detection_sub.get_last_msg("/filtered/detection").data
+            Logger.loginfo("Traffic_sign: {}".format(self._traffic_sign))
+            Logger.loginfo("-------")
+            
 
-            # Assuming 'stop_bar_info' is a string that indicates stop bar status.
-            if stop_bar_info == "down":
-                self._stop_bar_status = "down"
-                return 'proceed'
-            elif stop_bar_info == "up":
-                Logger.loginfo("Finished Stop bar mode.")
-                self._stop_bar_status = "up"
+            # recursion lane control
+            if self._traffic_sign == "[]":
+                Logger.loginfo("lane control recursion")
                 return 'done'
+     
+                #self.pid_control(desired_center)
+            else: # move mission_control
+
+                if 'boom_barrier' in self._traffic_sign:
+                    Logger.loginfo("boom_barreir!!")    
+                Logger.loginfo("start mission control")
+
+                cmd_vel_msg = Twist()
+                cmd_vel_msg.linear.x = 0.0 # 0.1
+                cmd_vel_msg.angular.z = 0.0
+                self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
+
+                return 'proceed'
+        
 
 
     def on_enter(self, userdata):

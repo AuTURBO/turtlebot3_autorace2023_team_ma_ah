@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="obdtacle">
+
+	<executable package_path="ma_ah_flexbe_behaviors.obdtacle_sm" class="obdtacleSM" />
+	<tagstring></tagstring>
+	<author>ggh</author>
+	<date>Thu Oct 12 2023</date>
+	<description>
+		obdtacle
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

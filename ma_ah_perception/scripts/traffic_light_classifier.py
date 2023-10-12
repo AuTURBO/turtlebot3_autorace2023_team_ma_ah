@@ -64,9 +64,9 @@ class Traffic_light_classifier:
         self.detection_msg = detection_msg
 
     def process(self):
-        print(self.detection_msg)
+        # print(self.detection_msg)
         if  self.detection_msg is not None:
-            print(len(self.detection_msg.detections))
+            # print(len(self.detection_msg.detections))
             if len(self.detection_msg.detections) > 0:
                 for i in range(len(self.detection_msg.detections)):
                     obj_id =  self.detection_msg.detections[i].results[0].id 
@@ -101,7 +101,7 @@ class Traffic_light_classifier:
                             pixel_num = cv2.countNonZero(gray)
                             print(pixel_num)
 
-                            if pixel_num > 700:
+                            if pixel_num > 300:
                                 self.traffic_color.data = "green"
                                 self.done = True
 

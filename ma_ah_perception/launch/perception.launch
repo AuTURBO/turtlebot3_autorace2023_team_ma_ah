@@ -1,0 +1,14 @@
+<launch>
+  <!-- Start Lane_detector  -->
+  <node pkg="ma_ah_perception" type="lane_detector.py" name="lane_detector" output="screen"></node>
+
+  <!-- Start traffic_light_classifier  -->
+  <!-- <node pkg="ma_ah_perception" type="traffic_light_classifier.py" name="traffic_light_classifier" output="screen"></node> -->
+
+  <!-- Start detector  -->
+  <node pkg="yolov7_ros_trt" type="detector.py" name="detector" output="screen"></node>
+
+  <!-- Start yolo_filter  -->
+  <node pkg="ma_ah_perception" type="yolo_filter.py" name="yolo_filter" output="screen"></node>
+
+</launch>

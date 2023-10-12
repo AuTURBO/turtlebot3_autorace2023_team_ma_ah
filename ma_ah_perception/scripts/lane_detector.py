@@ -227,7 +227,7 @@ class Lane_detector:
         # cv2.imshow('hls_mask', hls_mask)
         # cv2.imshow('hls_result', hls_result)
 
-        lab_lower_yellow= (90, 0, 140)
+        lab_lower_yellow= (120, 0, 140)
         lab_upper_yellow = (230, 255, 255)
 
         lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)

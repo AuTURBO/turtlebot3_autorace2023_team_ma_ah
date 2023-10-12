@@ -10,6 +10,7 @@
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from ma_ah_flexbe_behaviors.mission_1_traffic_light_sm import mission1trafficlightSM
 from ma_ah_flexbe_behaviors.mission_2_cross_line__sm import mission2crosslineSM
+from ma_ah_flexbe_behaviors.mission_3_obstacle_avoidence_sm import mission3obstacleavoidenceSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -35,6 +36,7 @@ class first_testSM(Behavior):
 		# references to used behaviors
 		self.add_behavior(mission1trafficlightSM, 'mission 1 traffic light')
 		self.add_behavior(mission2crosslineSM, 'mission 2 cross line ')
+		self.add_behavior(mission3obstacleavoidenceSM, 'mission 3 obstacle avoidence')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -71,6 +73,12 @@ class first_testSM(Behavior):
 			# x:358 y:210
 			OperatableStateMachine.add('mission 2 cross line ',
 										self.use_behavior(mission2crosslineSM, 'mission 2 cross line '),
+										transitions={'finished': 'mission 3 obstacle avoidence', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
+
+			# x:545 y:332
+			OperatableStateMachine.add('mission 3 obstacle avoidence',
+										self.use_behavior(mission3obstacleavoidenceSM, 'mission 3 obstacle avoidence'),
 										transitions={'finished': 'finished', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 

@@ -1,24 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from std_msgs.msg import Float64, String
 
+import rospy
+import numpy as np
+from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy import ProxyPublisher
+from std_msgs.msg import String
+from sensor_msgs.msg import LaserScan
 
-
-import math
- 
-class ControlLaneState(EventState):
+class FindParkingStateObs(EventState):
     '''
-    Implements a FlexBE state that controls the lane of a robot.
+    Example for a state to detect parking spots.
+    This state listens to a topic for parking information and reacts accordingly.
+
+    <= parking_proceed     Parking spot available.
+    <= no_parking_spot            No parking spot available.
+
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['lane_control', 'mission_control'], input_keys=['lane_info'])
+        # Declare outcomes by calling the super constructor with the corresponding arguments.
+        super(FindParkingStateObs, self).__init__(outcomes=['left', 'right', 'proceed'], input_keys=['lane_info'])
+
+        # Initialize class variables or state parameters here if needed.
+        self.sub_scan = ProxySubscriberCached({"/scan": LaserScan})
+
+        self.is__left_obstacle_detected = False
+        self.is__right_obstacle_detected = False
+
+
         
         self.lastError = 0
         self._MAX_VEL = 0.1
@@ -28,13 +42,42 @@ class ControlLaneState(EventState):
         self.sub_right_lane = ProxySubscriberCached({"/detect/right/lane": Float64})
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
 
-        self.sub_direction_sign = ProxySubscriberCached({"/direction_sign": String})
-        self._filtered_detection_sub = ProxySubscriberCached({"/filtered/detection": String})
-
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
+        
         # pure pursuit control
         self.WB = 0.20
         self.Lf = 0.20
+
+
+
+    def checkObstacle(self):
+        if self.sub_scan.has_msg("/scan"):
+            scan = self.sub_scan.get_last_msg("/scan")
+            left_scan_start = -90 
+            left_scan_end = 0
+            right_scan_start = 0
+            right_scan_end = 90
+            
+            threshold_distance = 0.5
+            is_left_obstacle_detected = False
+            is_right_obstacle_detected = False
+            for i in range(left_scan_start, left_scan_end):
+                if scan.ranges[i] < threshold_distance and scan.ranges[i] > 0.01:
+                    is_left_obstacle_detected = True
+
+                    # print(scan.ranges[i])
+                    break
+            
+            for i in range(right_scan_start, right_scan_end):
+                if scan.ranges[i] < threshold_distance and scan.ranges[i] > 0.01:
+                    is_right_obstacle_detected = True
+
+                    # print(scan.ranges[i])
+                    break
+            
+            self.is__left_obstacle_detected = is_left_obstacle_detected
+            self.is__right_obstacle_detected = is_right_obstacle_detected
+
 
 
     # pid control
@@ -43,9 +86,9 @@ class ControlLaneState(EventState):
         error = center - 320
         # 0 - target
         # error = map(error, 100, -100, 2.5, -2.5)
-        Kp = 0.013
-        Ki = 0.001
-        Kd = 0.006
+        Kp = 0.015
+        Ki = 0.000
+        Kd = 0.007
 
         angular_z = Kp * error + Kd * (error - self.lastError) + Ki * (error)
         self.lastError = error
@@ -54,8 +97,6 @@ class ControlLaneState(EventState):
         twist.linear.x =  min(self._MAX_VEL * ((1 - abs(error) / 320) ** 2.2), 0.06)
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
         
-        # self
-        # self.pub_cmd_vel.publish(twist)
         self.pub_cmd_vel.publish("/cmd_vel", twist)
         Logger.loginfo("Following lane...")
 
@@ -94,9 +135,8 @@ class ControlLaneState(EventState):
         Logger.loginfo("Left lane:  {}".format(left_lane_data))
         Logger.loginfo("Right lane: {}".format(right_lane_data))
         no_line_margin = 280
-
         if direction_sign_data == "left": # Set Mode (left lane following)
-            Logger.loginfo("See Left lane!!")
+            Logger.loginfo("See Left lane!!") 
             #target = left_lane_data + side_margin
 
             if (abs(left_lane_data - 0.0) <= 0.01) or left_lane_data == 1000 : # if exist only left lane
@@ -142,44 +182,37 @@ class ControlLaneState(EventState):
         print(f"angle: {angle}")
         return float(angle)
 
+
+
     def on_enter(self, userdata):
-        Logger.loginfo("Starting lane control...")
+        Logger.loginfo("Starting obstacle...")
 
             
     def execute(self, userdata):
         
         # lane control logic
-        if self.sub_left_lane.has_msg("/detect/left/lane") and self.sub_right_lane.has_msg("/detect/right/lane"):
+        self.checkObstacle()
+
+        if self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == False:
             left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
             right_lane_data = self.sub_right_lane.get_last_msg("/detect/right/lane").data
-        
+
+
             angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
-
-            p_gain = 0.8
-
             cmd_vel_msg = Twist()
             cmd_vel_msg.linear.x = 0.15 # 0.1
-            cmd_vel_msg.angular.z = angle * p_gain
+            cmd_vel_msg.angular.z = angle
             self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
+            return 'proceed'
 
-        # When robot detect any traffic sign
-        if self._sub.has_msg("/filtered/detection"):
-            self._traffic_sign = self._filtered_detection_sub.get_last_msg("/filtered/detection").data
-            Logger.loginfo("Traffic_sign: {}".format(self._traffic_sign))
-            Logger.loginfo("-------")
-            Logger.loginfo("userdata.lane_info: {}".format(userdata.lane_info))
 
-            # recursion lane control
-            if self._traffic_sign == "[]":
-                Logger.loginfo("lane control recursion")
-                return 'lane_control'
-     
-                #self.pid_control(desired_center)
-            else: # move mission_control
-                Logger.loginfo("start mission control")
-                return 'mission_control'
-        
-
+        elif self.is__left_obstacle_detected == True and self.is__right_obstacle_detected == False:
+            Logger.loginfo('Left obstacle detected')
+            return 'left'
+        elif self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == True:
+            Logger.loginfo('Right obstacle detected')
+            return 'right'
+                # self.pid_control(target) 
 
     def on_exit(self, userdata):
 

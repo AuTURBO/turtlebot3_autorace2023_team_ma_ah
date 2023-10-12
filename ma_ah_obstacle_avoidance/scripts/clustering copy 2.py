@@ -19,77 +19,6 @@ from KalmanFilter import KalmanFilter
 
 from pure_pursuit import Robot
 
-class macro_drive:
-    def __init__(self):
-        # Publishers
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-        self.move_cmd = Twist()
-
-    def stop(self):
-        self.move_cmd.linear.x = 0.0
-        self.move_cmd.angular.z = 0.0
-        self.cmd_vel_pub.publish(self.move_cmd)
-        rospy.sleep(1.5)
-
-    def move(self, linear_x, angular_z, debug_msg, sleep_time):
-        self.move_cmd.linear.x = linear_x
-        self.move_cmd.angular.z = angular_z
-        self.cmd_vel_pub.publish(self.move_cmd)
-        print(debug_msg)
-        rospy.sleep(sleep_time)
-
-    def move_robot(self):
-        # ROS 노드 초기화
-
-        rospy.sleep(1)
-
-        # 전진
-        self.move(0.1, 0.0, "first forward", 1.3)
-        self.stop()
-
-        self.move(0.0, 0.5, "left", 1.1)
-        self.stop()
-        self.move(0.0, 0.5, "left", 1.1)
-        self.stop()
-
-        self.move(0.1, 0.0, "forward", 1.5)
-        self.stop()
-        self.move(0.1, 0.0, "forward", 1.5)
-        self.stop()
-
-        self.move(0.0, -0.5, "right", 1.1)
-        self.stop()
-        self.move(0.0, -0.5, "right", 1.1)
-        self.stop()
-
-        self.move(0.1, 0.0, "forward",1.2)
-        self.stop()
-        self.move(0.1, 0.0, "forward",1.2)
-        self.stop()
-        self.move(0.1, 0.0, "forward", 1.2)
-        self.stop()
-        
-        self.move(0.0, -0.5, "right", 1.4)
-        self.stop()
-        self.move(0.0, -0.5, "right", 1.4)
-        self.stop()
-
-        self.move(0.1, 0.0, "forward", 1.4)
-        self.stop()
-        self.move(0.1, 0.0, "forward", 1.5)
-        self.stop()
-
-
-
-        self.move(0.0, 0.5, "left", 1.4)
-        self.stop()
-        self.move(0.0, 0.5, "left", 1.4)
-        self.stop()
-
-        self.stop()
-
-        sys.exit(0)
-
 class LaserKMeansClustering:
     def __init__(self):
         # Publishers
@@ -255,8 +184,8 @@ class LaserKMeansClustering:
         # if self.move_direction == "left":
         #     filtered_scan = self.filter_laserscan(msg, 0.0, 1.0, np.pi/2 + (1.57 / 9) * 1.5, np.pi + np.pi/2 - (1.57 / 9) * 4)
         # elif self.move_direction == "right":
-        fov = (np.pi/18) * 6
-        see_max = 0.5
+        fov = (np.pi/18) * 2
+        see_max = 0.4
         filtered_scan_left = self.filter_laserscan(msg, 0.0, see_max, 0, np.pi/2 - fov)
         filtered_scan_right = self.filter_laserscan(msg, 0.0, see_max, np.pi + (np.pi/2) + fov, np.pi*2)
         filtered_scan = self.merge_scans(filtered_scan_left, filtered_scan_right)
@@ -303,23 +232,79 @@ class LaserKMeansClustering:
                     marker_array.markers.append(marker)
 
             self.marker_pub.publish(marker_array)
-            if len(cluster_centers) > 0 :
-                drive = macro_drive()
-                drive.move_robot()
             
+            # 모든 클러스터 marker 시각화
 
-    def map(self, x,input_min,input_max,output_min,output_max):
-        return (x-input_min)*(output_max-output_min)/(input_max-input_min)+output_min #map()함수 정의.
+            origin = np.array([0, 0])
+            closest_center, closest_center_label = self.get_closet_point(origin, current_cluster_centers) # obstacle로 간주
 
+            # obstacle marker 시각화
+            obstacle_marker_array = MarkerArray()
+            closest_center_points = points[clustering.labels_ == closest_center_label]
+            
+            marker = self.create_marker(closest_center_points[0][0], closest_center_points[0][1], 15, 5)
+            obstacle_marker_array.markers.append(marker)
 
-    def simple_controller(self, lx):
-        target = 320
-        side_margin = 220
+            print(f"self.tracking_lane = {self.tracking_lane}")
 
-        target = lx + side_margin
-  
-        print(f"target: {target}")
-        return int(target)     
+            if self.tracking_lane == "left":
+                sorted_point = sorted(closest_center_points, key=lambda closest_center_points: closest_center_points[1])
+                obstacle_lane_x = sorted_point[0][0] #sorted_point[0][0] 
+                obstacle_lane_y = sorted_point[0][1] 
+            elif self.tracking_lane == "right": # obstacle의 왼쪽 포인트 가져오기
+                sorted_point = sorted(closest_center_points, key=lambda closest_center_points: closest_center_points[1], reverse=True)
+                obstacle_lane_x = sorted_point[0][0] #sorted_point[0][0] 
+                obstacle_lane_y = sorted_point[0][1] 
+
+            marker = self.create_marker(obstacle_lane_x, obstacle_lane_y, 16, 5)
+            obstacle_marker_array.markers.append(marker)
+
+            self.obstacle_marker_pub.publish(obstacle_marker_array)
+
+            lane_marker_array = MarkerArray()
+
+            side_margin = 220
+
+            left_lane_data = self.left_lane 
+            print(f"left_lane_data:{left_lane_data}")
+
+            if (abs(left_lane_data - 0.0) <= 0.01) or left_lane_data == 1000 : # if exist only left lane
+                print("Error except!!")
+            elif left_lane_data != 1000 : # if No exist only left lane
+                target = left_lane_data + side_margin
+                angle = 320 - target
+                cmd_vel = Twist()
+                cmd_vel.linear.x = 0.003 #distance * 0.2 # 0.17
+                cmd_vel.angular.z = angle * 0.002 * 
+                self.cmd_vel_pub.publish(cmd_vel)
+                return 0
+
+            goal_margin = 0.18
+            target_x = obstacle_lane_x
+            target_y = obstacle_lane_y + goal_margin
+            print(f"target_x:{target_x}")
+            print(f"target_y:{target_y}")
+
+            goal_marker_array = MarkerArray()
+            marker = self.create_marker(target_x, target_y, 16, 5)
+            goal_marker_array.markers.append(marker)
+            self.goal_marker_pub.publish(goal_marker_array)
+            
+            distance = self.euclidean_distance(origin, (target_x, target_x))
+            print(f"closet obstacle distance: {distance}")
+
+            cross_track_error = (0 - target_y) * -1
+            print(f"cross_track_error:{cross_track_error}")
+
+            print(f"self.left_lane:{self.left_lane}")
+            
+            cmd_vel = Twist()
+            cmd_vel.linear.x = 0.08 #distance * 0.2 # 0.17
+            cmd_vel.angular.z = cross_track_error * 2.5 
+            #self.cmd_vel_pub.publish(cmd_vel)
+    
+
+            
 
     def get_object_coordinate(self, points):
             labels = np.unique(object.labels_)
@@ -448,6 +433,24 @@ class LaserKMeansClustering:
 
         return start_x, start_y, end_x, end_y
 
+    def simple_controller(self, lx, rx, mode):
+        target = 320
+        side_margin = 220
+
+        if lx != None and rx != None and len(lx) > 5 and len(rx) > 5:
+            print("ALL!!!")
+            print(f"lx :{lx[0]}, rx :{rx[0]}")
+            target = lx[0] + ((rx[0] - lx[0]) // 2)
+        elif lx != None and len(lx) > 3:
+            print("Right!!!")
+            #print(f"val: {lx[0]}")
+            target = lx[0] + side_margin
+        elif rx != None and len(rx) > 3:
+            print("Left!!!")
+            target = rx[0] - side_margin
+
+        print(f"target: {target}")
+        return int(target)
 
 if __name__ == '__main__':
     rospy.init_node('laser_kmeans_clustering')

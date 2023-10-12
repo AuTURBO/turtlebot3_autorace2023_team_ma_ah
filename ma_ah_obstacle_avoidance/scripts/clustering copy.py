@@ -4,13 +4,12 @@ import rospy
 import numpy as np
 import random
 import sys
-import tf
 
 from collections import deque
 
 from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker, MarkerArray
-from std_msgs.msg import Duration, Float64
+from std_msgs.msg import Duration 
 from geometry_msgs.msg import Twist, Point
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.linear_model import RANSACRegressor
@@ -19,104 +18,26 @@ from KalmanFilter import KalmanFilter
 
 from pure_pursuit import Robot
 
-class macro_drive:
-    def __init__(self):
-        # Publishers
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-        self.move_cmd = Twist()
-
-    def stop(self):
-        self.move_cmd.linear.x = 0.0
-        self.move_cmd.angular.z = 0.0
-        self.cmd_vel_pub.publish(self.move_cmd)
-        rospy.sleep(1.5)
-
-    def move(self, linear_x, angular_z, debug_msg, sleep_time):
-        self.move_cmd.linear.x = linear_x
-        self.move_cmd.angular.z = angular_z
-        self.cmd_vel_pub.publish(self.move_cmd)
-        print(debug_msg)
-        rospy.sleep(sleep_time)
-
-    def move_robot(self):
-        # ROS 노드 초기화
-
-        rospy.sleep(1)
-
-        # 전진
-        self.move(0.1, 0.0, "first forward", 1.3)
-        self.stop()
-
-        self.move(0.0, 0.5, "left", 1.1)
-        self.stop()
-        self.move(0.0, 0.5, "left", 1.1)
-        self.stop()
-
-        self.move(0.1, 0.0, "forward", 1.5)
-        self.stop()
-        self.move(0.1, 0.0, "forward", 1.5)
-        self.stop()
-
-        self.move(0.0, -0.5, "right", 1.1)
-        self.stop()
-        self.move(0.0, -0.5, "right", 1.1)
-        self.stop()
-
-        self.move(0.1, 0.0, "forward",1.2)
-        self.stop()
-        self.move(0.1, 0.0, "forward",1.2)
-        self.stop()
-        self.move(0.1, 0.0, "forward", 1.2)
-        self.stop()
-        
-        self.move(0.0, -0.5, "right", 1.4)
-        self.stop()
-        self.move(0.0, -0.5, "right", 1.4)
-        self.stop()
-
-        self.move(0.1, 0.0, "forward", 1.4)
-        self.stop()
-        self.move(0.1, 0.0, "forward", 1.5)
-        self.stop()
-
-
-
-        self.move(0.0, 0.5, "left", 1.4)
-        self.stop()
-        self.move(0.0, 0.5, "left", 1.4)
-        self.stop()
-
-        self.stop()
-
-        sys.exit(0)
-
 class LaserKMeansClustering:
     def __init__(self):
         # Publishers
         self.marker_pub = rospy.Publisher('/cluster_markers', MarkerArray, queue_size=10)
         self.obstacle_marker_pub = rospy.Publisher('/obstacle_markers', MarkerArray, queue_size=10)
         self.goal_marker_pub = rospy.Publisher('/goal_markers', MarkerArray, queue_size=10)
-        self.lane_marker_pub = rospy.Publisher('/lane_markers', MarkerArray, queue_size=10)
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.line_pub = rospy.Publisher('/line_marker', Marker, queue_size=10)
         # Subscribers
         rospy.Subscriber('/scan', LaserScan, self.callback)
         self.filtered_scan_pub = rospy.Publisher('/filtered_scan', LaserScan, queue_size=10)
         self.origin_marker_pub = rospy.Publisher('/origin_marker', Marker, queue_size=10)
-
-        self.left_lane_subscriber = rospy.Subscriber("/detect/left_lane", Float64, self.left_lane_cb)
-        self.right_lane_subscriber = rospy.Subscriber("/detect/right_lane", Float64, self.right_lane_cb)
-
         self.points = None
         self.prev_objecet_position = None
         self.current_objecet_position = None
         self.object_change_flag = False
-        self.tracking_lane = "right"
+        self.move_direction = "left"
         self.prev_slope = 0
         self.prev_cetner_x = 0
         self.prev_cetner_y = 0
-        self.left_lane = 0
-        self.right_lane = 0
 
         self.previous_cluster_centers = []
         self.tracked_objects = deque(maxlen=5)  # maxlen can be adjusted as per requirements
@@ -227,59 +148,25 @@ class LaserKMeansClustering:
 
         self.origin_marker_pub.publish(marker)
 
-    def merge_scans(self, scan1, scan2):
-        if scan1 is None or scan2 is None:
-            return None  # 두 메시지 중 하나가 아직 수신되지 않았다면 None 반환
-        
-        merged_scan = LaserScan()
-
-        # Header 정보 설정 (예제에서는 scan1의 헤더 사용)
-        merged_scan.header = scan1.header
-
-        # 두 스캔 간에 각도 정보가 동일하다고 가정
-        merged_scan.angle_min = scan1.angle_min
-        merged_scan.angle_max = scan1.angle_max
-        merged_scan.angle_increment = scan1.angle_increment
-        merged_scan.time_increment = scan1.time_increment
-        merged_scan.scan_time = scan1.scan_time
-        merged_scan.range_min = min(scan1.range_min, scan2.range_min)
-        merged_scan.range_max = max(scan1.range_max, scan2.range_max)
-
-        # 거리 값 병합 (작은 값 선택)
-        merged_scan.ranges = [min(r1, r2) for r1, r2 in zip(scan1.ranges, scan2.ranges)]
-
-        return merged_scan
-
     def callback(self, msg):
         # 1m ~ 5m , -90 ~ 90 of degree 
-        # if self.move_direction == "left":
-        #     filtered_scan = self.filter_laserscan(msg, 0.0, 1.0, np.pi/2 + (1.57 / 9) * 1.5, np.pi + np.pi/2 - (1.57 / 9) * 4)
-        # elif self.move_direction == "right":
-        fov = (np.pi/18) * 6
-        see_max = 0.5
-        filtered_scan_left = self.filter_laserscan(msg, 0.0, see_max, 0, np.pi/2 - fov)
-        filtered_scan_right = self.filter_laserscan(msg, 0.0, see_max, np.pi + (np.pi/2) + fov, np.pi*2)
-        filtered_scan = self.merge_scans(filtered_scan_left, filtered_scan_right)
+        if self.move_direction == "left":
+            filtered_scan = self.filter_laserscan(msg, 0.0, 1.0, np.pi/2 + (1.57 / 9) * 1.5, np.pi + np.pi/2 - (1.57 / 9) * 4)
+        elif self.move_direction == "right":
+            filtered_scan = self.filter_laserscan(msg, 0.0, 1.0, np.pi/2 + (1.57 / 9) * 4, np.pi + np.pi/2 - (1.57 / 9) * 1.5)
         self.filtered_scan_pub.publish(filtered_scan)
 
         # filtered_points = self.filter_laserscan(msg, 0.0, 2.5, 0, 1.57 * 2  )
         # self.publish_filtered_scan(msg, filtered_points)
         self.publish_origin_marker()
         self.points = self.laserscan_to_points(filtered_scan)
-    
-    def left_lane_cb(self, msg):
-        self.left_lane = msg.data
-
-    def right_lane_cb(self, msg):
-        self.right_lane = msg.data
 
     def process(self):
-        #print(self.points)
         # 클러스터링
         points = self.points
 
         if len(points) > 0:
-            clustering = DBSCAN(eps=0.2, min_samples=5).fit(points)
+            clustering = DBSCAN(eps=0.1, min_samples=5).fit(points)
             cluster_centers = []
 
             labels = np.unique(clustering.labels_)
@@ -292,7 +179,7 @@ class LaserKMeansClustering:
             if len(cluster_centers) == 0:
                 return None  # 아무런 클러스터도 발견되지 않았을 경우
 
-            current_cluster_centers = cluster_centers # self.track_clusters(cluster_centers)
+            current_cluster_centers = self.track_clusters(cluster_centers)
 
             marker_array = MarkerArray()
             ## 클러스터링된 모든 클러스터 중앙점 표시
@@ -301,25 +188,118 @@ class LaserKMeansClustering:
                 if label != -1:  # -1은 노이즈에 해당
                     marker = self.create_marker(x, y, label, i)
                     marker_array.markers.append(marker)
-
             self.marker_pub.publish(marker_array)
-            if len(cluster_centers) > 0 :
-                drive = macro_drive()
-                drive.move_robot()
             
+            # 모든 클러스터 marker 시각화
 
-    def map(self, x,input_min,input_max,output_min,output_max):
-        return (x-input_min)*(output_max-output_min)/(input_max-input_min)+output_min #map()함수 정의.
+            origin = np.array([0, 0])
+            closest_center, closest_center_label = self.get_closet_point(origin, current_cluster_centers) # obstacle로 간주
+
+            
+            self.current_objecet_position = closest_center
+            
+            if self.current_objecet_position is not None and self.prev_objecet_position is not None:
+                object_position_error = abs(self.current_objecet_position[0] - self.prev_objecet_position[0])
+               # print(f"object_position_error = {object_position_error}")
+                if object_position_error > 0.1:
+                    print("----------------object change!!----------------")
+                    self.object_change_flag = True
+            else:
+                pass
+            self.prev_objecet_position = self.current_objecet_position
+
+            # obstacle marker 시각화
+            obstacle_marker_array = MarkerArray()
+            marker = self.create_marker(closest_center[0], closest_center[1], closest_center_label, 0)
+            obstacle_marker_array.markers.append(marker)
+
+            closest_center_points = points[clustering.labels_ == closest_center_label]
+            # smoothed_ranges = self.moving_average(closest_center_points)
+            
+            # RANSAC 적용
+            try:
+                ransac = RANSACRegressor(max_trials=100, min_samples=3, residual_threshold=0.05)
+                ransac.fit(closest_center_points[:, 0].reshape(-1, 1), closest_center_points[:, 1])
+            # 예측 범위 설정
+                line_X = np.arange(closest_center_points[:, 0].min() - 0.1, closest_center_points[:, 0].max() + 0.1, 0.01)
+                line_y_ransac = ransac.predict(line_X[:, np.newaxis])
+
+                center_x = (line_X[0] + line_X[-1]) / 2.0
+                center_y = (line_y_ransac[0] + line_y_ransac[-1]) / 2.0
 
 
-    def simple_controller(self, lx):
-        target = 320
-        side_margin = 220
+                slope = (line_y_ransac[-1] - line_y_ransac[0]) / (line_X[-1] - line_X[0])
+                angle = np.arctan(slope)  # 직선의 기울기로부터 각도를 찾습니다.
+                angle_degrees = np.degrees(angle)
 
-        target = lx + side_margin
-  
-        print(f"target: {target}")
-        return int(target)     
+                # print("직선의 기울기:", slope)
+                # print("직선의 각도 (라디안):", angle)
+                # print("직선의 각도 (도):", angle_degrees)
+
+                self.prev_cetner_x = center_x
+                self.prev_cetner_y = center_y
+                self.prev_slope = slope
+                start_x, start_y, end_x, end_y = self.get_limited_line_points(slope, center_x, center_y, length=0.5)
+
+                if start_y < end_y:
+                    left_point_x = start_x
+                    left_point_y = start_y
+                    right_point_x = end_x
+                    right_point_y = end_y
+                else:
+                    left_point_x = end_x
+                    left_point_y = end_y
+                    right_point_x = start_x
+                    right_point_y = start_y
+
+                self.publish_line(start_x, start_y, end_x, end_y)
+
+                if self.object_change_flag == True:
+                    # input("Object change")
+                    # print(self.move_direction)
+                    if self.move_direction == "left":
+                        self.move_direction = "right"
+                    elif self.move_direction == "right":
+                        self.move_direction = "left"
+                    # print(self.move_direction)
+                    self.object_change_flag = False
+                    # input("Object change Finish")
+
+                goal_margin = 0.02
+                print(f"self.move_direction = {self.move_direction}")
+                if self.move_direction == "left":
+                    sorted_point = sorted(closest_center_points, key=lambda closest_center_points: closest_center_points[1])
+                    target_x = left_point_x #sorted_point[0][0] 
+                    target_y = left_point_y - goal_margin #sorted_point[0][1] - goal_margin
+                elif self.move_direction == "right":
+                    sorted_point = sorted(closest_center_points, key=lambda closest_center_points: closest_center_points[1], reverse=True)
+                    target_x = right_point_x #sorted_point[0][0] 
+                    target_y = right_point_y + goal_margin#sorted_point[0][1] + goal_margin
+
+                # obstacle left point marker 시각화
+                marker = self.create_marker(sorted_point[0][0], sorted_point[0][1], 15, 5)
+                obstacle_marker_array.markers.append(marker)
+                
+                self.obstacle_marker_pub.publish(obstacle_marker_array)
+
+                goal_marker_array = MarkerArray()
+                marker = self.create_marker(target_x, target_y, 16, 5)
+                goal_marker_array.markers.append(marker)
+                self.goal_marker_pub.publish(goal_marker_array)
+                
+                distance = self.euclidean_distance(origin, (target_x, target_x))
+                print(f"closet obstacle distance: {distance}")
+
+                cross_track_error = 0 - target_y
+                print(f"cross_track_error:{cross_track_error}")
+                cmd_vel = Twist()
+                cmd_vel.linear.x = distance * 0.2 # 0.17
+                cmd_vel.angular.z = cross_track_error * 4.0
+                self.cmd_vel_pub.publish(cmd_vel)
+            except:
+                pass
+
+            
 
     def get_object_coordinate(self, points):
             labels = np.unique(object.labels_)
@@ -448,6 +428,8 @@ class LaserKMeansClustering:
 
         return start_x, start_y, end_x, end_y
 
+    def moving_average(self, data, window_size=5):
+        return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
 if __name__ == '__main__':
     rospy.init_node('laser_kmeans_clustering')

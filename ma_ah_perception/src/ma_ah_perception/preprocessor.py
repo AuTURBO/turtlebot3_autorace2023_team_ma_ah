@@ -141,7 +141,7 @@ class PreProcessor:
         # print(img.shape)
         histogram = np.sum(img[420:, :], axis=0)  # X축 히스토그램 계산
 
-        right_start_point = 100
+        right_start_point = 160
         if lane_type == "left":
             result = np.argmax(histogram[:640-right_start_point])
         elif lane_type == "right":

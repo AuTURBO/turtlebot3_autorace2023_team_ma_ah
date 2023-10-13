@@ -30,6 +30,7 @@ class ControlLaneState(EventState):
 
         self.sub_direction_sign = ProxySubscriberCached({"/direction_sign": String})
         self._filtered_detection_sub = ProxySubscriberCached({"/filtered/detection": String})
+        self._stop_sign_sub = ProxySubscriberCached({"/stop_sign": String})
 
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
         # pure pursuit control
@@ -175,7 +176,16 @@ class ControlLaneState(EventState):
             angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
 
             cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = self.linear_vel # 0.15
+            
+            if self._sub.has_msg("/filtered/detection"):
+                self._traffic_sign = self._filtered_detection_sub.get_last_msg("/filtered/detection").data
+                if self._traffic_sign == "['boom_barrier']":
+                    cmd_vel_msg.linear.x = 0.0
+                    Logger.loginfo("Stop!!!")
+                else:
+                    cmd_vel_msg.linear.x = self.linear_vel # 0.15
+            # cmd_vel_msg = Twist()
+            # cmd_vel_msg.linear.x = self.linear_vel # 0.15
             cmd_vel_msg.angular.z = angle 
             self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
 
@@ -185,9 +195,10 @@ class ControlLaneState(EventState):
             Logger.loginfo("Traffic_sign: {}".format(self._traffic_sign))
             Logger.loginfo("-------")
             Logger.loginfo("userdata.lane_info: {}".format(userdata.lane_info))
+            
 
             # recursion lane control
-            if self._traffic_sign == "[]":
+            if self._traffic_sign == "[]" or self._traffic_sign == "['stop']" or self._traffic_sign == "['boom_barrier']" or self._traffic_sign == "['boom_barrier', 'stop']" or self._traffic_sign == "['stop', 'boom_barrier']":
                 Logger.loginfo("lane control recursion")
                 return 'lane_control'
      

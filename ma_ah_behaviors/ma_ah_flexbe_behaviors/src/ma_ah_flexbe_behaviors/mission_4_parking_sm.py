@@ -81,12 +81,12 @@ class mission4parkingSM(Behavior):
 
 
 		with _state_machine:
-			# x:394 y:194
-			OperatableStateMachine.add('find_parking_lane_control',
-										FindParkingStateObs(),
-										transitions={'left': 'find_parking_go_3', 'right': 'find_parking_go_4', 'proceed': 'find_parking_lane_control'},
-										autonomy={'left': Autonomy.Off, 'right': Autonomy.Off, 'proceed': Autonomy.Off},
-										remapping={'lane_info': 'two_left', 'pid_info': 'pid_info'})
+			# x:216 y:42
+			OperatableStateMachine.add('escape_lane_control_2',
+										ControlLaneState(),
+										transitions={'lane_control': 'escape_lane_control_2', 'mission_control': 'find_parking_lane_control'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'middle', 'pid_info': 'pid_info_2', 'vel_info': 'vel_info'})
 
 			# x:277 y:535
 			OperatableStateMachine.add('escape_parking_back',
@@ -150,6 +150,13 @@ class mission4parkingSM(Behavior):
 										transitions={'procced': 'find_parking_go_4', 'done': 'find_parking_right_2 find_parking_right_2'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'go', 'target_distance': 'escape_go', 'target_theta': 'target_theta'})
+
+			# x:394 y:194
+			OperatableStateMachine.add('find_parking_lane_control',
+										FindParkingStateObs(),
+										transitions={'left': 'find_parking_go_3', 'right': 'find_parking_go_4', 'proceed': 'find_parking_lane_control'},
+										autonomy={'left': Autonomy.Off, 'right': Autonomy.Off, 'proceed': Autonomy.Off},
+										remapping={'lane_info': 'two_left', 'pid_info': 'pid_info'})
 
 			# x:284 y:328
 			OperatableStateMachine.add('find_parking_left',

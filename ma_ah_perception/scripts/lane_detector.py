@@ -161,7 +161,7 @@ class Lane_detector:
 
             kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13))
             left_lane_gray_close = cv2.morphologyEx(left_lane_gray, cv2.MORPH_CLOSE,kernel_close)
-            cv2.imshow("left_lane_gray_close", left_lane_gray_close)
+            #cv2.imshow("left_lane_gray_close", left_lane_gray_close)
 
 
             lane_pixel_img = cv2.add(left_lane_gray, right_lane_gray)
@@ -188,8 +188,8 @@ class Lane_detector:
             left_msk, lx, ly = pre_module.sliding_window(left_lane_gray, "left")
             right_msk, rx, ry = pre_module.sliding_window(right_lane_gray, "right")
 
-            cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
-            cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
+            #cv2.imshow('left_msk', left_msk)	# 프레임 보여주기
+            #cv2.imshow('right_msk', right_msk)	# 프레임 보여주기
 
             msk = cv2.add(left_msk, right_msk)
             # filtered_lx, filtered_ly, filtered_mx, filtered_my, filtered_rx, filtered_ry = pre_module.filtering_lane(msk, lx, ly, mx, my, rx, ry)

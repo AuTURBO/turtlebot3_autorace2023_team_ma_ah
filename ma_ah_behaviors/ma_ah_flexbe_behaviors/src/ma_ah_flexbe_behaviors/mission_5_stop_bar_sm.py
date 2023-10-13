@@ -9,7 +9,6 @@
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from ma_ah_flexbe_states.lane_control import ControlLaneState
-from ma_ah_flexbe_states.stop_bar_state import StopBarState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -46,10 +45,19 @@ class mission5stopbarSM(Behavior):
 	def create(self):
 		left = "left"
 		stop = "stop"
+		middle = "middle"
+		pid_info = [0.8, 0.0, 0.3]
+		vel_info = 0.05
+		right = "right"
+		pid_pid_2 = [0.8, 0.0, 0.3]
 		# x:30 y:638, x:130 y:638
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.left = left
 		_state_machine.userdata.stop = stop
+		_state_machine.userdata.pid_info = pid_info
+		_state_machine.userdata.vel_info = vel_info
+		_state_machine.userdata.right = right
+		_state_machine.userdata.middle = middle
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -58,25 +66,12 @@ class mission5stopbarSM(Behavior):
 
 
 		with _state_machine:
-			# x:72 y:103
-			OperatableStateMachine.add('lane_control_2',
-										ControlLaneState(),
-										transitions={'lane_control': 'lane_control_2', 'mission_control': 'stop_bar_state'},
-										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
-
-			# x:256 y:77
-			OperatableStateMachine.add('stop_bar_state',
-										StopBarState(),
-										transitions={'proceed': 'stop_bar_state', 'done': 'lane_control'},
-										autonomy={'proceed': Autonomy.Off, 'done': Autonomy.Off})
-
 			# x:275 y:290
 			OperatableStateMachine.add('lane_control',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										remapping={'lane_info': 'right', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
 
 
 		return _state_machine

@@ -23,7 +23,7 @@ pre_module = PreProcessor(roi_height, roi_width)
 
 class Lane_detector:
     def __init__(self, img_topic, cmd_vel_topic, center_lane_topic, left_lane_topic, right_lane_topic, processed_img_topic):
-        self.lane_bin_th = 120  # 145
+        self.lane_bin_th = 200  # 145
         self.frameWidth = 0
         self.frameHeight = 0
         self.prevTime = 0
@@ -43,6 +43,19 @@ class Lane_detector:
 
         self.cv_image = None
     
+        cv2.namedWindow("Track_bar")
+ 
+        cv2.createTrackbar("hls_l_low", "Track_bar",0, 255, self.h_change)
+        cv2.setTrackbarPos("hls_l_low", "Track_bar", 127)
+
+        # cv2.createTrackbar("lab_l_low", "Track_bar",0, 255, lambda x:x)
+        # cv2.setTrackbarPos("lab_l_low", "Track_bar", 127)
+
+        # cv2.createTrackbar("lab_l_high", "Track_bar",0, 255, lambda x:x)
+        # cv2.setTrackbarPos("lab_l_high", "Track_bar", 127)
+
+
+
     def img_cb(self, img_msg):
         try:
             # cv_image = CvBridge().imgmsg_to_cv2(img_msg, "bgr8")
@@ -114,8 +127,12 @@ class Lane_detector:
         self.left_lane_publisher.publish(left_line_msg)
         self.right_lane_publisher.publish(right_line_msg)
 
+    def h_change(value):
+        pass
+
     def process(self):
         if self.cv_image is not None:
+
             frame = self.cv_image
             #print(frame.shape)
 
@@ -134,22 +151,37 @@ class Lane_detector:
 
             left_lane_img, right_lane_img = self.color_filtering(warped_img)
 
-            lane_pixel_img = cv2.add(left_lane_img, right_lane_img)
+            left_lane_gray = cv2.cvtColor(left_lane_img, cv2.COLOR_BGR2GRAY)
+
+            left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "basic", window_name="otsu", show=True)
+            
+            right_lane_gray = cv2.cvtColor(right_lane_img, cv2.COLOR_BGR2GRAY)
+
+            right_lane_gray = self.threshold_binary(right_lane_gray, self.lane_bin_th, "basic", window_name="otsu", show=True)
+
+            kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13))
+            left_lane_gray_close = cv2.morphologyEx(left_lane_gray, cv2.MORPH_CLOSE,kernel_close)
+            cv2.imshow("left_lane_gray_close", left_lane_gray_close)
+
+
+            lane_pixel_img = cv2.add(left_lane_gray, right_lane_gray)
             #cv2.imshow("lane_pixel_img", lane_pixel_img)
 
-            gray = cv2.cvtColor(lane_pixel_img, cv2.COLOR_BGR2GRAY)
+            # gray = cv2.cvtColor(lane_pixel_img, cv2.COLOR_BGR2GRAY)
             
             # binary = self.threshold_binary(gray, self.lane_bin_th, "otsu", window_name="otsu", show=True)
             # cv2.imshow("otsu", binary)
 
             # edge = self.canny(binary, 70, 210, show=False)
 
-            # kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13))
-            # closing = cv2.morphologyEx(gray, cv2.MORPH_CLOSE,kernel_close)
-            # cv2.imshow('closing', closing)	# 프레임 보여주기
+            # left_lane_gray = cv2.cvtColor(left_lane_img, cv2.COLOR_BGR2GRAY)
+            # right_lane_gray = cv2.cvtColor(right_lane_img, cv2.COLOR_BGR2GRAY)
 
-            left_lane_gray = cv2.cvtColor(left_lane_img, cv2.COLOR_BGR2GRAY)
-            right_lane_gray = cv2.cvtColor(right_lane_img, cv2.COLOR_BGR2GRAY)
+            # left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "otsu", window_name="otsu", show=False)
+
+            # kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13))
+            # left_lane_gray_close = cv2.morphologyEx(left_lane_gray, cv2.MORPH_CLOSE,kernel_close)
+            # cv2.imshow('left_lane_gray_close', left_lane_gray_close)	# 프레임 보여주기
 
             #left_lane_gray = self.threshold_binary(left_lane_gray, self.lane_bin_th, "otsu", window_name="otsu", show=False)
 
@@ -208,14 +240,17 @@ class Lane_detector:
         return lane
 
     def color_filtering(self, img):
-        hls_low = 220
-        hls_high = 255
+        hls_l_low =  cv2.getTrackbarPos("hls_l_low", "Track_bar")
+
+        # lab_l_low = cv2.getTrackbarPos("lab_l_low", "Track_bar")
+        # lab_l_high = cv2.getTrackbarPos("lab_l_high", "Track_bar")
+        #hls_l = cv2.getTrackbarPos("h", "Track_bar")
 
         lab_low = 190
         lab_high = 255
         
-        hls_lower_white = (0, 230, 0)
-        hls_upper_white = (255, 255, 230)
+        hls_lower_white = (0, 228, 0)
+        hls_upper_white = (255, 255, 30)
 
         hls_img = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
         # 색상 범위를 제한하여 mask 생성
@@ -227,8 +262,8 @@ class Lane_detector:
         # cv2.imshow('hls_mask', hls_mask)
         # cv2.imshow('hls_result', hls_result)
 
-        lab_lower_yellow= (120, 0, 140)
-        lab_upper_yellow = (230, 255, 255)
+        lab_lower_yellow= (0, 0, 130)
+        lab_upper_yellow = (255, 255, 180)
 
         lab_img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 

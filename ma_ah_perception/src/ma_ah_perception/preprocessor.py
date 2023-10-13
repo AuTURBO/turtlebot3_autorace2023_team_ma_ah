@@ -139,12 +139,11 @@ class PreProcessor:
 
     def hist_line_peak(self, img, lane_type):
         # print(img.shape)
-        histogram = np.sum(img[460:, :], axis=0)  # X축 히스토그램 계산
+        histogram = np.sum(img[420:, :], axis=0)  # X축 히스토그램 계산
 
-        right_start_point = 120
+        right_start_point = 100
         if lane_type == "left":
-            result = np.argmax(histogram[:480])
-            #print(f"left_base :{left_base}")
+            result = np.argmax(histogram[:640-right_start_point])
         elif lane_type == "right":
             result = right_start_point + np.argmax(histogram[right_start_point :])
 
@@ -184,27 +183,27 @@ class PreProcessor:
         
         if lane_type == "left":
             left_base = self.hist_line_peak(img, "left")  # hist_line_peak 함수로 슬라이딩 윈도우의 초기 탐색점 결정
-            #print(f"left_base :{left_base}")
+            print(f"left_base :{left_base}")
         elif lane_type == "right":
             right_base = self.hist_line_peak(img, "right")
-            #print(f"right_base :{right_base}")
+            print(f"right_base :{right_base}")
 
         # Sliding Window
-        y = 470  # 탐색 시작 Y좌표 결정
+        y = 480  # 탐색 시작 Y좌표 결정
         lx = []  # 왼쪽 차선 X좌표 저장 리스트
         ly = []  # 왼쪽 차선 Y좌표 저장 리스트
         rx = []  # 오른쪽 차선 X좌표 저장 리스트
         ry = []  # 오른쪽 차선 Y좌표 저장 리스트
         mx = []  # 중간 차선 X좌표 저장 리스트
         my = []  # 중간 차선 Y좌표 저장 리스트
-        self.window_width = 60  # window 폭
-        self.window_height = 10  # window 높이
+        self.window_width = 30  # window 폭
+        self.window_height = 5  # window 높이
         self.left_window_n = 0
         self.right_window_n = 0
         self.mid_window_n = 0
-        self.lane_count_threshold = 3
+        self.lane_count_threshold = 5 #7
 
-        self.lane_num = 25
+        self.lane_num = 20# 30
 
         msk = img.copy()  # 차선검출 결과를 디스플레이 하기 위한 이미지 복사
         msk = cv2.cvtColor(msk, cv2.COLOR_GRAY2BGR)  # 컬러 표시를 위해 색공간을 Gray에서 BGR로 변환
@@ -214,12 +213,11 @@ class PreProcessor:
                 if self.left_window_n < self.lane_num:  # 왼쪽 차선 검출을 위한 window를 5개까지만 허용
                     window = img[
                         y - self.window_height : y,
-                        left_base - self.window_width : left_base + self.window_width,
+                       left_base - self.window_width : left_base + self.window_width,
                     ]  # left window 생성
                     contours, _ = cv2.findContours(
                         window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
                     )  # window 영역에서 contour 검출
-                
                     if len(contours) == 0:  # 차선을 못 찾았을떄
                         if prev_detect_flag_left == False:  # 차선을 연속으로 못 찾았을떄
                             line_detect_fail_count_left += 1  # 차선 검출 실패 카운트 증가
@@ -272,7 +270,7 @@ class PreProcessor:
                                 self.left_window_n += 1  # 왼쪽 윈도우 개수 증가
 
                     if len(lx) < 1:  # 왼쪽 차선을 못찾았을뗴
-                        # print("Left line No")
+                        print("Left line No")
                         self.left_line_detect_flag = False  # 왼쪽 차선 검출 성공 플래그 False로 세팅
         
             elif lane_type == "right":
@@ -281,7 +279,6 @@ class PreProcessor:
                         y - self.window_height : y,
                         right_base - self.window_width : right_base + self.window_width,
                     ]  # right window 생성
-       
                     contours, _ = cv2.findContours(
                         window, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
                     )  # window 영역에서 contour 검출

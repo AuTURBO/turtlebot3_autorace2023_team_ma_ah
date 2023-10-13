@@ -24,7 +24,7 @@ class FindParkingStateObs(EventState):
 
     def __init__(self):
         # Declare outcomes by calling the super constructor with the corresponding arguments.
-        super(FindParkingStateObs, self).__init__(outcomes=['left', 'right', 'proceed'], input_keys=['lane_info'])
+        super(FindParkingStateObs, self).__init__(outcomes=['left', 'right', 'proceed'], input_keys=['lane_info', 'pid_info'])
 
         # Initialize class variables or state parameters here if needed.
         self.sub_scan = ProxySubscriberCached({"/scan": LaserScan})
@@ -43,22 +43,26 @@ class FindParkingStateObs(EventState):
         self.sub_max_vel = ProxySubscriberCached({"/control/max_vel": Float64})
 
         self.pub_cmd_vel = ProxyPublisher({"/cmd_vel": Twist})
-        
+        self.prev_error = 0
         # pure pursuit control
         self.WB = 0.20
         self.Lf = 0.20
 
+        self.right_flag = False
+        self.Kp = 0.015
+        self.Ki = 0.01
+        self.Kd = 0.07
 
 
     def checkObstacle(self):
         if self.sub_scan.has_msg("/scan"):
             scan = self.sub_scan.get_last_msg("/scan")
-            left_scan_start = -90 
-            left_scan_end = 0
-            right_scan_start = 0
-            right_scan_end = 90
+            left_scan_start = 135 # 85 
+            left_scan_end = 185 # 95
+            right_scan_start = 195 # 265
+            right_scan_end = 245 # 275
             
-            threshold_distance = 0.5
+            threshold_distance = 0.45
             is_left_obstacle_detected = False
             is_right_obstacle_detected = False
             for i in range(left_scan_start, left_scan_end):
@@ -127,23 +131,30 @@ class FindParkingStateObs(EventState):
     def map(self, x,input_min,input_max,output_min,output_max):
         return (x-input_min)*(output_max-output_min)/(input_max-input_min)+output_min #map()함수 정의.
 
+
+
     # Minwoo's controller 
     def simple_controller(self, left_lane_data, right_lane_data, direction_sign_data):
         target = 320
         side_margin = 220
+        one_lane_mode_margin = 235
         Logger.loginfo("Simple controller user_info: {}".format(direction_sign_data))
         Logger.loginfo("Left lane:  {}".format(left_lane_data))
         Logger.loginfo("Right lane: {}".format(right_lane_data))
         no_line_margin = 280
+        left_only_no_line_margin = 260
+
         if direction_sign_data == "left": # Set Mode (left lane following)
-            Logger.loginfo("See Left lane!!") 
+            Logger.loginfo("See Left lane!!")
             #target = left_lane_data + side_margin
 
             if (abs(left_lane_data - 0.0) <= 0.01) or left_lane_data == 1000 : # if exist only left lane
                 Logger.loginfo("Error except!!")
                 target = no_line_margin
+                self.right_flag = True
+
             elif left_lane_data != 1000 : # if No exist only left lane
-                target = left_lane_data + side_margin
+                target = left_lane_data + one_lane_mode_margin
 
         elif direction_sign_data == "right": # Set Mode Only (right lane following)
             Logger.loginfo("See Right lane!!")
@@ -155,7 +166,7 @@ class FindParkingStateObs(EventState):
                 Logger.loginfo("Error except!!")
                 target = 640 - no_line_margin
             elif right_lane_data != 1000: # if exist only left lane
-                target = right_lane_data - side_margin
+                target = right_lane_data - one_lane_mode_margin
 
 
         # 1000 is represent None value 
@@ -174,45 +185,74 @@ class FindParkingStateObs(EventState):
             elif left_lane_data == 1000 and right_lane_data == 1000: # if don't exist lane
                 target = 0
 
-        angle = 320 - target
-        Logger.loginfo("target: {}".format(target))
-        Logger.loginfo("Angle: {}".format(angle))
-        print(f"target: {target}")
-        angle = self.map(angle, 100, -100, 1.5, -1.5) # 0.5
-        print(f"angle: {angle}")
-        return float(angle)
+        elif direction_sign_data == "two_left": # Set Mode (left lane following)
+            Logger.loginfo("See Two Left lane!!")
+            #target = left_lane_data + side_margin
 
+            if left_lane_data > 320:
+                Logger.loginfo("Lane over!!")
+                left_lane_data = 50
+                target = left_lane_data + one_lane_mode_margin
+            if (abs(left_lane_data - 0.0) <= 0.01) or left_lane_data == 1000 : # if exist only left lane
+                Logger.loginfo("Error except!!")
+                target = left_only_no_line_margin
+
+            elif left_lane_data != 1000 : # if No exist only left lane
+                target = left_lane_data + one_lane_mode_margin
+        p_gain = 0.9 # 0.9
+        d_gain = 0.9 #0.2
+
+        error = 320 - target
+        Logger.loginfo("target: {}".format(target))
+        Logger.loginfo("Angle: {}".format(error))
+        print(f"target: {target}")
+        error = self.map(error, 100, -100, 1.5, -1.5) # 0.5
+
+        diff = self.prev_error - error
+        Logger.loginfo("diff: {}".format(diff))
+
+        angle = error * self.Kp + diff * self.Kd + self.Ki * (self.prev_error + error)
+        
+        self.prev_error = error
+
+        return float(angle)
 
 
     def on_enter(self, userdata):
         Logger.loginfo("Starting obstacle...")
-
+        self.Kp = userdata.pid_info[0]
+        self.Ki = userdata.pid_info[1]
+        self.Kd = userdata.pid_info[2]
+        
             
     def execute(self, userdata):
         
         # lane control logic
         self.checkObstacle()
+        if self.sub_left_lane.has_msg("/detect/left/lane") or self.sub_right_lane.has_msg("/detect/right/lane"):
+            if self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == False:
+                left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
+                right_lane_data = self.sub_right_lane.get_last_msg("/detect/right/lane").data
+                angle = 0.0
+                if self.right_flag == True:
+                    
+                    angle = self.simple_controller(left_lane_data, right_lane_data, 'right') 
+                else:
+                    angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info) 
+                cmd_vel_msg = Twist()
+                cmd_vel_msg.linear.x = 0.1 #0.15 # 0.1
+                cmd_vel_msg.angular.z = angle
+                self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
+                return 'proceed'
 
-        if self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == False:
-            left_lane_data = self.sub_left_lane.get_last_msg("/detect/left/lane").data
-            right_lane_data = self.sub_right_lane.get_last_msg("/detect/right/lane").data
 
-
-            angle = self.simple_controller(left_lane_data, right_lane_data, userdata.lane_info)
-            cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = 0.15 # 0.1
-            cmd_vel_msg.angular.z = angle
-            self.pub_cmd_vel.publish("/cmd_vel", cmd_vel_msg)
-            return 'proceed'
-
-
-        elif self.is__left_obstacle_detected == True and self.is__right_obstacle_detected == False:
-            Logger.loginfo('Left obstacle detected')
-            return 'left'
-        elif self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == True:
-            Logger.loginfo('Right obstacle detected')
-            return 'right'
-                # self.pid_control(target) 
+            elif self.is__left_obstacle_detected == True and self.is__right_obstacle_detected == False:
+                Logger.loginfo('Left obstacle detected')
+                return 'left'
+            elif self.is__left_obstacle_detected == False and self.is__right_obstacle_detected == True:
+                Logger.loginfo('Right obstacle detected')
+                return 'right'
+                    # self.pid_control(target) 
 
     def on_exit(self, userdata):
 

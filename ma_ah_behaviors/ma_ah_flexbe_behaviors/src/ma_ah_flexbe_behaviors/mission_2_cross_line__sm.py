@@ -47,11 +47,15 @@ class mission2crosslineSM(Behavior):
 		left = "left"
 		right = "right"
 		middle = "middle"
+		pid_info = [0.35, 0.0, 0.1]
+		vel_info = 0.05
 		# x:30 y:365, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.left = left
 		_state_machine.userdata.right = right
 		_state_machine.userdata.middle = middle
+		_state_machine.userdata.pid_info = pid_info
+		_state_machine.userdata.vel_info = vel_info
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -65,28 +69,28 @@ class mission2crosslineSM(Behavior):
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control', 'mission_control': 'IntersectionMode'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'middle'})
+										remapping={'lane_info': 'right', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
 
 			# x:236 y:202
 			OperatableStateMachine.add('lane_control_left',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control_left', 'mission_control': 'lane_control_left'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left'})
+										remapping={'lane_info': 'left', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
 
 			# x:504 y:204
 			OperatableStateMachine.add('lane_control_right',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control_right', 'mission_control': 'lane_control_right'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'right'})
+										remapping={'lane_info': 'right', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
 
 			# x:394 y:343
 			OperatableStateMachine.add('lane_control_right_2',
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control_right_2', 'mission_control': 'finished'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'right'})
+										remapping={'lane_info': 'right', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
 
 			# x:435 y:65
 			OperatableStateMachine.add('IntersectionMode',

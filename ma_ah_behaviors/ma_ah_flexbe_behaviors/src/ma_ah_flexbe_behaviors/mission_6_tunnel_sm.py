@@ -8,7 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from flexbe_states.wait_state import WaitState
+from ma_ah_flexbe_states.claer_cost_map_state import ClearCostmapsState
 from ma_ah_flexbe_states.lane_control import ControlLaneState
 from ma_ah_flexbe_states.move_base import MoveBaseState
 from ma_ah_flexbe_states.set_initial_pose_state import SetInitialPoseState
@@ -63,12 +63,19 @@ class mission6tunnelSM(Behavior):
 
 
 		with _state_machine:
-			# x:328 y:85
+			# x:101 y:107
 			OperatableStateMachine.add('set_init',
 										SetInitialPoseState(),
-										transitions={'succeeded': 'wait_state'},
+										transitions={'succeeded': 'clear_map'},
 										autonomy={'succeeded': Autonomy.Off},
 										remapping={'initial_pose': 'initial_pose'})
+
+			# x:440 y:198
+			OperatableStateMachine.add('goal_move_base',
+										MoveBaseState(),
+										transitions={'arrived': 'lane_control', 'failed': 'goal_move_base'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'waypoint': 'waypoint'})
 
 			# x:646 y:376
 			OperatableStateMachine.add('lane_control',
@@ -77,18 +84,11 @@ class mission6tunnelSM(Behavior):
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
 										remapping={'lane_info': 'middle'})
 
-			# x:632 y:146
-			OperatableStateMachine.add('wait_state',
-										WaitState(wait_time=self.wait_time),
-										transitions={'done': 'goal_move_base'},
-										autonomy={'done': Autonomy.Off})
-
-			# x:440 y:198
-			OperatableStateMachine.add('goal_move_base',
-										MoveBaseState(),
-										transitions={'arrived': 'lane_control', 'failed': 'goal_move_base'},
-										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off},
-										remapping={'waypoint': 'waypoint'})
+			# x:211 y:170
+			OperatableStateMachine.add('clear_map',
+										ClearCostmapsState(),
+										transitions={'done': 'goal_move_base', 'failed': 'clear_map'},
+										autonomy={'done': Autonomy.Off, 'failed': Autonomy.Off})
 
 
 		return _state_machine

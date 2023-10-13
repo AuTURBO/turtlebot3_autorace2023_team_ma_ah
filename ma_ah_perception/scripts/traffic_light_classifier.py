@@ -44,32 +44,24 @@ class Traffic_light_classifier:
             print(e)
         else:
             pass
-            # cv2.imshow("traffic", self.cv_image)
-            # key = cv2.waitKey(1)
-            # if key == ord('q'):
-            #     sys.exit(0)
-            #cv2.imshow('callback', cv_image)	# 프레임 보여주기
-            # self.process(cv_image)
-    
-    # def filtered_detection_cb(self, msg):
-    #     try:
-    #     except CvBridgeError as e:
-    #         print(e)
-    #     else:
-    #         #cv2.imshow('callback', cv_image)	# 프레임 보여주기
-    #         self.process(cv_image)
 
     def detection_cb(self, detection_msg):
-        print("-----------")
-        self.detection_msg = detection_msg
+        if self.done == False:
+            print("-----------")
+            self.detection_msg = detection_msg
+        else:
+            print("Done")
+            sys.exit(0)
 
     def process(self):
-        # print(self.detection_msg)
-        if  self.detection_msg is not None:
+        #print(self.detection_msg)
+        detection = self.detection_msg
+        if  detection is not None:
+ 
             # print(len(self.detection_msg.detections))
-            if len(self.detection_msg.detections) > 0:
-                for i in range(len(self.detection_msg.detections)):
-                    obj_id =  self.detection_msg.detections[i].results[0].id 
+            if len(detection.detections) > 0:
+                for i in range(len(detection.detections)):
+                    obj_id =  detection.detections[i].results[0].id 
 
                     # If detect traffic_light
 
@@ -81,10 +73,10 @@ class Traffic_light_classifier:
                     if  self.cv_image is not None:
                         if self.labels[obj_id] == "traffic_light":
 
-                            center_x = int(self.detection_msg.detections[i].bbox.center.x)
-                            center_y = int(self.detection_msg.detections[i].bbox.center.y)
-                            bbox_size_x = int(self.detection_msg.detections[i].bbox.size_x)
-                            bbox_size_y = int(self.detection_msg.detections[i].bbox.size_y)
+                            center_x = int(detection.detections[i].bbox.center.x)
+                            center_y = int(detection.detections[i].bbox.center.y)
+                            bbox_size_x = int(detection.detections[i].bbox.size_x)
+                            bbox_size_y = int(detection.detections[i].bbox.size_y)
 
                             self.roi_x = int(center_x - (bbox_size_x // 2))
                             self.roi_y = int(center_y - (bbox_size_y // 2))

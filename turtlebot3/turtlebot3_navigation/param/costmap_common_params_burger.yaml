@@ -6,7 +6,7 @@ footprint: [[-0.04, -0.04], [-0.04, 0.04], [0.04, 0.04], [0.04, -0.04]]
 # robot_radius: 0.105
 
 
-inflation_radius: 0.01  # 장애물 팽창 반지름 (미터)
+inflation_radius: 0.1  # 장애물 팽창 반지름 (미터)
 
 cost_scaling_factor: 300.0  # 코스트 값에 곱해질 스케일링 팩터
 

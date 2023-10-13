@@ -17,7 +17,7 @@ TebLocalPlannerROS:
 
   # 로봇 관련 설정
   max_vel_x: 0.4  # 로봇의 최대 전진 속도
-  max_vel_x_backwards: 0.4  # 로봇의 최대 후진 속도
+  max_vel_x_backwards: 0.2 # 로봇의 최대 후진 속도
   max_vel_y: 0.0  # 로봇의 최대 좌우 이동 속도
   max_vel_theta: 0.5  # 로봇의 최대 각속도
   acc_lim_x: 0.5  # 로봇의 전진 가속도 한계

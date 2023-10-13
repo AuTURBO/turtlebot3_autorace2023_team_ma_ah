@@ -12,13 +12,13 @@ from flexbe_core.proxy import ProxyPublisher
 
 import math
  
-class ControlLaneState(EventState):
+class EscapeParkingLaneControl(EventState):
     '''
     Implements a FlexBE state that controls the lane of a robot.
     '''
 
     def __init__(self):
-        super(ControlLaneState, self).__init__(outcomes=['lane_control', 'mission_control'], input_keys=['lane_info', 'pid_info', 'vel_info'])
+        super(EscapeParkingLaneControl, self).__init__(outcomes=['lane_control', 'mission_control'], input_keys=['lane_info', 'pid_info', 'vel_info'])
         
         self.lastError = 0
         self._MAX_VEL = 0.1
@@ -198,7 +198,7 @@ class ControlLaneState(EventState):
             
 
             # recursion lane control
-            if self._traffic_sign == "[]" or self._traffic_sign == "['stop']" or self._traffic_sign == "['boom_barrier']" or self._traffic_sign == "['boom_barrier', 'stop']" or self._traffic_sign == "['stop', 'boom_barrier']":
+            if self._traffic_sign == "[]" or self._traffic_sign == "['stop']" or self._traffic_sign == "['boom_barrier']" or self._traffic_sign == "['boom_barrier', 'stop']" or self._traffic_sign == "['stop', 'boom_barrier']" or self._traffic_sign == "['left']":
                 Logger.loginfo("lane control recursion")
                 return 'lane_control'
      

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="mission 4 5">
+
+	<executable package_path="ma_ah_flexbe_behaviors.mission_4_5_sm" class="mission45SM" />
+	<tagstring></tagstring>
+	<author>ggh</author>
+	<date>Sat Oct 14 2023</date>
+	<description>
+		mission 4 5
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="mission 4 parking" />
+
+	<!-- Available Parameters -->
+
+</behavior>

@@ -8,6 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
+from ma_ah_flexbe_states.escape_parking_lane_control import EscapeParkingLaneControl
 from ma_ah_flexbe_states.find_lane_control_parking import FindParkingStateObs
 from ma_ah_flexbe_states.lane_control import ControlLaneState
 from ma_ah_flexbe_states.moving_control_state import MovingControlState
@@ -116,6 +117,13 @@ class mission4parkingSM(Behavior):
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'right', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
+			# x:870 y:345
+			OperatableStateMachine.add('excpeparkinglanecontrol',
+										EscapeParkingLaneControl(),
+										transitions={'lane_control': 'excpeparkinglanecontrol', 'mission_control': 'finished'},
+										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
+										remapping={'lane_info': 'left', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
+
 			# x:280 y:436
 			OperatableStateMachine.add('find_parking_go',
 										MovingControlState(),
@@ -130,10 +138,10 @@ class mission4parkingSM(Behavior):
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'go', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
 
-			# x:692 y:676
+			# x:684 y:600
 			OperatableStateMachine.add('find_parking_go_2_2',
 										MovingControlState(),
-										transitions={'procced': 'find_parking_go_2_2', 'done': 'escape_lane_control'},
+										transitions={'procced': 'find_parking_go_2_2', 'done': 'excpeparkinglanecontrol'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'go', 'target_distance': 'escape_go', 'target_theta': 'target_theta'})
 
@@ -171,13 +179,6 @@ class mission4parkingSM(Behavior):
 										transitions={'procced': 'find_parking_right_2 find_parking_right_2', 'done': 'find_parking_go_2'},
 										autonomy={'procced': Autonomy.Off, 'done': Autonomy.Off},
 										remapping={'moving_info': 'right', 'target_distance': 'target_distance', 'target_theta': 'target_theta'})
-
-			# x:850 y:236
-			OperatableStateMachine.add('escape_lane_control',
-										ControlLaneState(),
-										transitions={'lane_control': 'escape_lane_control', 'mission_control': 'finished'},
-										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'left', 'pid_info': 'pid_info_2', 'vel_info': 'vel_info'})
 
 
 		return _state_machine

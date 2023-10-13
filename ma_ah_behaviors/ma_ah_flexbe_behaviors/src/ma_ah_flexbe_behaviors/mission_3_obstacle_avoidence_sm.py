@@ -88,7 +88,7 @@ class mission3obstacleavoidenceSM(Behavior):
 										ControlLaneState(),
 										transitions={'lane_control': 'lane_control_start', 'mission_control': 'obstacle_lane_control_3'},
 										autonomy={'lane_control': Autonomy.Off, 'mission_control': Autonomy.Off},
-										remapping={'lane_info': 'middle'})
+										remapping={'lane_info': 'middle', 'pid_info': 'pid_info', 'vel_info': 'vel_info'})
 
 			# x:192 y:167
 			OperatableStateMachine.add('left',

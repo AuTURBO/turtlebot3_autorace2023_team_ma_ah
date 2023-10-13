@@ -39,8 +39,8 @@ class ObstacleControlLaneState(EventState):
 
     def checkObstacle(self):
         scan = self.sub_scan.get_last_msg("/scan")
-        scan_start = 175
-        scan_end = 185
+        scan_start = 175 - 90
+        scan_end = 185 - 90
         threshold_distance = 0.23
         is_obstacle_detected = False
 

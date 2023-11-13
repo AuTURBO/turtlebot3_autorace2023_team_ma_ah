@@ -27,16 +27,14 @@ lane detection mode
 ## 2) Yolo detecting
 
 > YOLOv7 + TensorRT
-> 
+> ![yolo](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/81260570-0127-49b1-8518-8803514ff553)
 
 ---
 
 ## 3) Mode Control
 
 > behavior planning using flexbe
-> 
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/30d4fa06-c8db-47eb-98a6-ccca81cd3566/Untitled.png)
+> ![mode_control](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/6c21eeba-94f1-43c6-9840-634e8b5e23d3)
 
 https://www.youtube.com/watch?v=2PzjZ15FKa0
 
@@ -50,8 +48,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 6. 미션 6 터널 
 
 # Mission Driving
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/01775276-fe24-444a-99bc-2d9dd8a3d69d/Untitled.png)
+![mission_map](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/a1a2ee94-2e65-4e16-9913-e13a99f7c49a)
 
 ## **Mission 1** - Traffic Light
 
@@ -60,7 +57,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 
 ---
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/b134af32-1d6b-4766-a214-596d76eaf850/Untitled.png)
+![mission1](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/af8b4bb3-938c-4ba9-98e8-1eb1bca09980)
 
 ### workflow
 
@@ -76,7 +73,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 
 ---
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/f9f096ec-4d2f-4e53-b361-12ac1f45ee5e/Untitled.png)
+![mission2](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/d0099146-919c-4251-9589-cd60d71857a5)
 
 ### workflow
 
@@ -94,8 +91,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 > 
 
 ---
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/865600f5-0872-451a-9bef-914622e408a1/Untitled.png)
+![mission3](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/00063626-8a48-4300-86b4-8c47f4663020)
 
 ### workflow
 
@@ -114,8 +110,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 > 
 
 ---
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/dfe0d78e-e33a-4db7-a965-84476b9154d4/Untitled.png)
+![mission4](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/dcdcf02d-7967-4141-ba60-48be8a3b71cf)
 
 ### workflow
 
@@ -135,8 +130,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 
 ---
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/7377b4e1-57c5-455a-a2c1-83ae4673f8d1/Untitled.png)
-
+![mission5](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/8910b44f-ec0e-4ac9-93ea-de4fda27f845)
 ### workflow
 
 > 모든 표지판 인식 state는 lane control를 기반으로 합니다.
@@ -152,7 +146,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 
 ---
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/063347d4-92f4-4c8f-b7a3-dbde8564da20/Untitled.png)
+![mission6](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/2e04fcfa-a4b3-4b6a-b7f3-ea2b179f5caa)
 
 ### workflow
 

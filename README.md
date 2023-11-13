@@ -92,7 +92,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 
 ---
 ![mission3](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/00063626-8a48-4300-86b4-8c47f4663020)
-
+https://youtube.com/shorts/rHxQUZukmhc?feature=shared
 ### workflow
 
 > 모든 표지판 인식 state는 lane control를 기반으로 합니다.
@@ -111,7 +111,8 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 
 ---
 ![mission4](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/dcdcf02d-7967-4141-ba60-48be8a3b71cf)
-[![parking ](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/aea4f8f2-1082-489c-99bc-c54742b69540)](https://youtube.com/shorts/lqK7hY0W3qg?feature=shared)
+[![parking ](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/aea4f8f2-1082-489c-99bc-c54742b69540)]
+https://youtube.com/shorts/lqK7hY0W3qg?feature=shared
 
 ### workflow
 
@@ -148,6 +149,7 @@ https://www.youtube.com/watch?v=2PzjZ15FKa0
 ---
 
 ![mission6](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/2e04fcfa-a4b3-4b6a-b7f3-ea2b179f5caa)
+https://youtube.com/shorts/J4HfZa4f0UA?feature=shared
 
 ### workflow
 

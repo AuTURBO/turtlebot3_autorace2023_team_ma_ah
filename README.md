@@ -3,8 +3,7 @@
 # **turtlebot3_autorace2023_team_ma_ah**
 
 ---
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/3ebd7466-47fd-4fbf-93b6-84876be96390/Untitled.png)
+![model](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/75b4d80b-bfca-4eae-9d56-95999b6d2fe8)
 
 ![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/933ac4de-063e-453b-8f92-0028a8b675e1/Untitled.png)
 

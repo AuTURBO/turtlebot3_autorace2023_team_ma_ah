@@ -1,21 +1,15 @@
 # turtlebot3_autorace2023_team_ma_ah
-
-# **turtlebot3_autorace2023_team_ma_ah**
-
 ---
 ![model](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/75b4d80b-bfca-4eae-9d56-95999b6d2fe8)
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/933ac4de-063e-453b-8f92-0028a8b675e1/Untitled.png)
-
-![IMG_0466.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/a7b026ab-ffcb-4df8-8528-7b1e6b0957e9/IMG_0466.png)
-
-> 시온님한테 받으면 교체
-> 
+![dimension](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/3c673414-4247-446c-9cab-794d504c7967)
+![map](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/0a314161-f460-4823-b085-5f71954e6f5c)
 
 ## 1) Line Tracking
 
 > line detecting and line control
-> 
+> ![lane_following_gazebo](https://github.com/AuTURBO/turtlebot3_autorace2023_team_ma_ah/assets/26687721/7befdb41-05a5-4d46-bc4f-be8b824ee494)
+
 
 ---
 

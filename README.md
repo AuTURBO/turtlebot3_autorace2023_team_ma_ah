@@ -1,5 +1,176 @@
 # turtlebot3_autorace2023_team_ma_ah
 
+# **turtlebot3_autorace2023_team_ma_ah**
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/3ebd7466-47fd-4fbf-93b6-84876be96390/Untitled.png)
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/933ac4de-063e-453b-8f92-0028a8b675e1/Untitled.png)
+
+![IMG_0466.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/a7b026ab-ffcb-4df8-8528-7b1e6b0957e9/IMG_0466.png)
+
+> 시온님한테 받으면 교체
+> 
+
+## 1) Line Tracking
+
+> line detecting and line control
+> 
+
+---
+
+### workflow
+
+lane detection mode
+
+1. Bird eye view
+2. HSV filtering
+3. sliding window
+4. 왼쪽, 오른쪽 차선 구분
+5. 차선 각도 예외처리 && 오차값 생성
+6. 위 오차값을 이용한 조향각 PID 제어
+
+## 2) Yolo detecting
+
+> YOLOv7 + TensorRT
+> 
+
+---
+
+## 3) Mode Control
+
+> behavior planning using flexbe
+> 
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/30d4fa06-c8db-47eb-98a6-ccca81cd3566/Untitled.png)
+
+https://www.youtube.com/watch?v=2PzjZ15FKa0
+
+> 각각의 미션을 flexbe를 이용하여 서브 트리로 구현 하였음.
+> 
+1. 미션 1 신호등 인식 
+2. 미션 2 갈림길 
+3. 미션 3 장애물 회피 
+4. 미션 4 주차 
+5. 미션 5 정지바 
+6. 미션 6 터널 
+
+# Mission Driving
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/01775276-fe24-444a-99bc-2d9dd8a3d69d/Untitled.png)
+
+## **Mission 1** - Traffic Light
+
+> Traffic light detect and control
+> 
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/b134af32-1d6b-4766-a214-596d76eaf850/Untitled.png)
+
+### workflow
+
+> 모든 표지판 인식 state는 lane control를 기반으로 합니다.
+> 
+1. 신호등 인식 state를 통해 green일 경우 종료
+2. 다음 표지판을 인식하기 전까지 lane control
+
+## **Mission 2** - Cross Line
+
+> Cross traffic sign detect and control
+> 
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/f9f096ec-4d2f-4e53-b361-12ac1f45ee5e/Untitled.png)
+
+### workflow
+
+> 모든 표지판 인식 state는 lane control를 기반으로 합니다.
+> 
+1. 갈림길 시작 표지판 인식 state 
+2. 왼, 오른쪽 표지판 인식 state 
+    1. 왼쪽 : 노랑 선 lane control 
+    2. 오른쪽 : 흰선 lane control 
+3. stop 표지판 인식 state
+
+## **Mission 3** - Obstacle Avoidence
+
+> Obstacle traffic sign detect and avoidence
+> 
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/865600f5-0872-451a-9bef-914622e408a1/Untitled.png)
+
+### workflow
+
+> 모든 표지판 인식 state는 lane control를 기반으로 합니다.
+> 
+1. 장애물 표지판 인식 state 
+    1. 흰선 lane control 
+2. 장애물 인식 state 
+3. 휴리스틱한 장애물 회피
+    1. pid 기반 각도 및 일정거리 이동 
+4. 표지판 인식 state 
+
+## **Mission 4** - Parking
+
+> Parking traffic sign detect and parking
+> 
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/dfe0d78e-e33a-4db7-a965-84476b9154d4/Untitled.png)
+
+### workflow
+
+> 모든 표지판 인식 state는 lane control를 기반으로 합니다.
+> 
+1. 주차 표지판 인식 state 
+    1. 노랑선 lane control 
+2. 주차공간 진입 state 
+3. 휴리스틱 한 주차 후 탈출 state 
+    1. pid 기반 각도 및 일정거리 이동 
+4. 오른쪽 노랑선 lane control state 
+
+## **Mission 5** - Stop Bar
+
+> StopBar detect and stop control
+> 
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/7377b4e1-57c5-455a-a2c1-83ae4673f8d1/Untitled.png)
+
+### workflow
+
+> 모든 표지판 인식 state는 lane control를 기반으로 합니다.
+> 
+1. stopbar 인식 state 
+    1. 인식하면 정지
+    2. 다른 표지판 인식 시 다음 state로 전환 
+
+## **Mission 6** - Tunnel
+
+> Tunnel detect and movebase control
+> 
+
+---
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/668d33fc-a756-4903-b615-68d63974b0bf/063347d4-92f4-4c8f-b7a3-dbde8564da20/Untitled.png)
+
+### workflow
+
+> 모든 표지판 인식 state는 lane control를 기반으로 합니다.
+> 
+1. 터널 진입 표지판 인식 state 
+2. initpose state 
+3. clear costmap state 
+4. goal pose state 
+5. lane control state
+
 ## install
 
 ```python
